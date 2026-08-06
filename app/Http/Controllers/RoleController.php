@@ -8,95 +8,90 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
-class RoleController extends Controller
+class RoleController extends BaseController
 {
+    public function __construct()
+    {
+        $this->model = Role::class;
+        $this->route = 'roles';
+        $this->titlePage = 'Daftar Role';
+        $this->primaryKey = 'rId';
+        $this->table = 'role';
+        $this->searchColumn = 'rNama';
+
+        $this->form = [
+            [
+                'name' => 'rNama',
+                'label' => 'Nama Role',
+                'placeholder' => 'Masukkan nama role',
+                'type' => 'text',
+                'col' => 'col-md-12',
+                'required' => true,
+                'unique' => 'role,rNama',
+            ],
+        ];
+    }
+
     /**
-     * Tampilkan daftar role.
+     * Tampilkan daftar role + form (two-column layout).
      */
     public function index(Request $request): View
     {
         $search = $request->get('search');
+        $editId = $request->get('edit');
 
-        $roles = Role::when($search, function ($query, $search) {
-                return $query->where('rNama', 'like', "%{$search}%");
-            })
-            ->orderBy('rId', 'desc')
+        $query = Role::query();
+
+        if ($search && $this->searchColumn) {
+            $columns = (array) $this->searchColumn;
+            $query->where(function ($q) use ($columns, $search) {
+                foreach ($columns as $col) {
+                    $q->orWhere($col, 'like', "%{$search}%");
+                }
+            });
+        }
+
+        $items = $query->orderBy($this->primaryKey, 'desc')
             ->paginate(10)
             ->withQueryString();
 
-        return view('roles.index', compact('roles', 'search'));
+        $editData = null;
+        if ($editId) {
+            $editData = Role::where($this->primaryKey, $editId)->first();
+        }
+
+        $extra = [];
+        foreach ($this->extraViewData as $key => $resolver) {
+            $extra[$key] = is_callable($resolver) ? $resolver() : $resolver;
+        }
+
+        return view('roles.index', array_merge([
+            'items' => $items,
+            'search' => $search,
+            'editData' => $editData,
+            'form' => $this->form,
+            'route' => $this->route,
+            'primaryKey' => $this->primaryKey,
+            'titlePage' => $this->titlePage,
+        ], $extra));
     }
 
-    /**
-     * Form tambah role.
-     */
-    public function create(): View
+    protected function beforeSave(array $data, $record = null): array
     {
-        return view('roles.create');
+        $data['rCreatedBy'] = auth()->user()->name;
+        $data['rUpdatedBy'] = auth()->user()->name;
+
+        return $data;
     }
 
-    /**
-     * Simpan role baru.
-     */
-    public function store(Request $request): RedirectResponse
+    protected function beforeUpdate(array $data, $record): array
     {
-        $validated = $request->validate([
-            'rNama' => ['required', 'string', 'max:225', 'unique:role,rNama'],
-        ]);
+        $data['rUpdatedBy'] = auth()->user()->name;
 
-        Role::create([
-            'rNama'      => $validated['rNama'],
-            'rCreatedBy' => auth()->user()->name,
-            'rUpdatedBy' => auth()->user()->name,
-        ]);
-
-        return redirect()
-            ->route('roles.index')
-            ->with('success', 'Role berhasil ditambahkan.');
+        return $data;
     }
 
-    /**
-     * Form edit role.
-     */
-    public function edit(string $id): View
-    {
-        $role = Role::where('rId', $id)->firstOrFail();
-
-        return view('roles.edit', compact('role'));
-    }
-
-    /**
-     * Update role.
-     */
-    public function update(Request $request, string $id): RedirectResponse
-    {
-        $validated = $request->validate([
-            'rNama' => ['required', 'string', 'max:225', "unique:role,rNama,{$id},rId"],
-        ]);
-
-        $role = Role::where('rId', $id)->firstOrFail();
-        $role->update([
-            'rNama'      => $validated['rNama'],
-            'rUpdatedBy' => auth()->user()->name,
-        ]);
-
-        return redirect()
-            ->route('roles.index')
-            ->with('success', 'Role berhasil diupdate.');
-    }
-
-    /**
-     * Hapus role.
-     */
-    public function destroy(string $id): RedirectResponse
-    {
-        $role = Role::where('rId', $id)->firstOrFail();
-        $role->delete();
-
-        return redirect()
-            ->route('roles.index')
-            ->with('success', 'Role berhasil dihapus.');
-    }
+    // ── Role Menu Management (tidak pakai dua kolom) ─────────────────────
 
     /**
      * Tampilkan form akses menu untuk role.
@@ -106,7 +101,6 @@ class RoleController extends Controller
         $role = Role::where('rId', $id)->firstOrFail();
         $assignedMenuIds = $role->menus()->pluck('menu.mId')->toArray();
 
-        // Ambil semua menu, grouping parent & child
         $allMenus = Menu::where('mIsActive', 1)->orderBy('mOrder')->get();
         $parentMenus = $allMenus->whereNull('mParentId');
         $childMenus = $allMenus->whereNotNull('mParentId')->groupBy('mParentId');
@@ -122,7 +116,6 @@ class RoleController extends Controller
         $role = Role::where('rId', $id)->firstOrFail();
 
         $menuIds = $request->input('menu_ids', []);
-
         $role->menus()->sync($menuIds);
 
         return redirect()

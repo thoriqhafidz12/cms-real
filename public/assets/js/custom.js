@@ -12,3 +12,14 @@ $(window).on("load", function () {
 $(".navbar").animate({ top: "0px" }, 200);
 $(".navbar-left").animate({ left: "0px" }, 200);
 $(".bottom-slide").animate({ bottom: "0px" }, 200);
+
+// TOOLTIP
+document.addEventListener('DOMContentLoaded', function () {
+    const tooltipTriggerList = [].slice.call(
+        document.querySelectorAll('[data-bs-toggle="tooltip"]')
+    );
+
+    tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+});

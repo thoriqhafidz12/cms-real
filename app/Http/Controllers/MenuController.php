@@ -2,95 +2,139 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
 use App\Models\Menu;
+use Illuminate\Http\Request;
 use Illuminate\View\View;
 
-class MenuController extends Controller
+class MenuController extends BaseController
 {
+    public function __construct()
+    {
+        $this->model = Menu::class;
+        $this->route = 'menus';
+        $this->titlePage = 'Daftar Menu';
+        $this->primaryKey = 'mId';
+        $this->table = 'menu';
+        $this->searchColumn = 'mNama';
+
+        $this->form = [
+            [
+                'name' => 'mNama',
+                'label' => 'Nama Menu',
+                'placeholder' => 'Masukkan nama menu',
+                'type' => 'text',
+                'col' => 'col-md-12',
+                'required' => true,
+                'unique' => 'menu,mNama',
+            ],
+            [
+                'name' => 'mRoute',
+                'label' => 'Route Prefix',
+                'placeholder' => 'Masukkan prefix route (e.g. users)',
+                'type' => 'text',
+                'col' => 'col-md-12',
+                'required' => false,
+            ],
+            [
+                'name' => 'mIcon',
+                'label' => 'Icon (Font Awesome)',
+                'placeholder' => 'e.g. fa-users, fa-cog',
+                'type' => 'text',
+                'col' => 'col-md-12',
+                'required' => false,
+            ],
+            [
+                'name' => 'mOrder',
+                'label' => 'Urutan',
+                'placeholder' => 'Masukkan urutan',
+                'type' => 'number',
+                'col' => 'col-md-12',
+                'required' => false,
+            ],
+            [
+                'name' => 'mParentId',
+                'label' => 'Parent Menu',
+                'placeholder' => '-- Pilih Parent --',
+                'type' => 'select',
+                'col' => 'col-md-12',
+                'required' => false,
+                'options' => [], // diisi dynamic via extraViewData
+            ],
+        ];
+
+        $this->extraViewData = [
+            'parentMenus' => fn() => Menu::whereNull('mParentId')
+                ->where('mIsActive', 1)
+                ->orderBy('mOrder')
+                ->get(),
+        ];
+    }
+
+    /**
+     * Tampilkan daftar menu + form (two-column layout).
+     */
     public function index(Request $request): View
     {
         $search = $request->get('search');
+        $editId = $request->get('edit');
 
-        $menus = Menu::when($search, function ($query, $search) {
-            return $query->where('mNama', 'like', "%{$search}%");
-        })
-            ->orderBy('mId', 'desc')
+        $query = Menu::query();
+
+        if ($search && $this->searchColumn) {
+            $columns = (array) $this->searchColumn;
+            $query->where(function ($q) use ($columns, $search) {
+                foreach ($columns as $col) {
+                    $q->orWhere($col, 'like', "%{$search}%");
+                }
+            });
+        }
+
+        $items = $query->orderBy($this->primaryKey, 'desc')
             ->paginate(10)
             ->withQueryString();
 
-        return view('menus.index', compact('menus', 'search'));
+        $editData = null;
+        if ($editId) {
+            $editData = Menu::where($this->primaryKey, $editId)->first();
+        }
+
+        $extra = [];
+        foreach ($this->extraViewData as $key => $resolver) {
+            $extra[$key] = is_callable($resolver) ? $resolver() : $resolver;
+        }
+
+        return view('menus.index', array_merge([
+            'items' => $items,
+            'search' => $search,
+            'editData' => $editData,
+            'form' => $this->form,
+            'route' => $this->route,
+            'primaryKey' => $this->primaryKey,
+            'titlePage' => $this->titlePage,
+        ], $extra));
     }
 
-    /**
-     * Form tambah menu.
-     */
-    public function create(): View
+    protected function beforeSave(array $data, $record = null): array
     {
-        return view('menus.create');
+        $data['mCreatedBy'] = auth()->user()->name;
+        $data['mUpdatedBy'] = auth()->user()->name;
+        $data['mIsActive'] = 1;
+
+        if (empty($data['mParentId'])) {
+            $data['mParentId'] = null;
+        }
+
+        return $data;
     }
 
-    /**
-     * Simpan menu baru.
-     */
-    public function store(Request $request): RedirectResponse
+    protected function beforeUpdate(array $data, $record): array
     {
-        $validated = $request->validate([
-            'mNama' => ['required', 'string', 'max:225', 'unique:menu,mNama'],
-        ]);
+        $data['mUpdatedBy'] = auth()->user()->name;
 
-        Menu::create([
-            'mNama' => $validated['mNama'],
-            'mCreatedBy' => auth()->user()->name,
-            'mUpdatedBy' => auth()->user()->name,
-        ]);
+        if (empty($data['mParentId'])) {
+            $data['mParentId'] = null;
+        }
 
-        return redirect()
-            ->route('menus.index')
-            ->with('success', 'Menu berhasil ditambahkan.');
-    }
-
-    /**
-     * Form edit menu.
-     */
-    public function edit(string $id): View
-    {
-        $menu = Menu::where('mId', $id)->firstOrFail();
-
-        return view('menus.edit', compact('menu'));
-    }
-
-    /**
-     * Update menu.
-     */
-    public function update(Request $request, string $id): RedirectResponse
-    {
-        $validated = $request->validate([
-            'mNama' => ['required', 'string', 'max:225', "unique:menu,mNama,{$id},mId"],
-        ]);
-
-        $menu = Menu::where('mId', $id)->firstOrFail();
-        $menu->update([
-            'mNama' => $validated['mNama'],
-            'mUpdatedBy' => auth()->user()->name,
-        ]);
-
-        return redirect()
-            ->route('menus.index')
-            ->with('success', 'Menu berhasil diupdate.');
-    }
-
-    /**
-     * Hapus menu.
-     */
-    public function destroy(string $id): RedirectResponse
-    {
-        $menu = Menu::where('mId', $id)->firstOrFail();
-        $menu->delete();
-
-        return redirect()
-            ->route('menus.index')
-            ->with('success', 'Menu berhasil dihapus.');
+        return $data;
     }
 }
