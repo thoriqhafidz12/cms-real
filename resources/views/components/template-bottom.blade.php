@@ -7,5 +7,8 @@
 
  <!-- Custom scripts for all pages-->
  <script src="{{ url('/') }}/assets/js/sb-admin-2.min.js"></script>
+ <script src="{{ url('/') }}/assets/js/custom.js"></script>
+
+ @stack('scripts')
 
  </html>

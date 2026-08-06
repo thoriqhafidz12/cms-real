@@ -19,4 +19,5 @@
     <!-- Custom styles for this template-->
     <link href="{{ url('/') }}/assets/css/sb-admin-2.min.css" rel="stylesheet">
     <link href="{{ url('/') }}/assets/css/custom.css" rel="stylesheet">
+    <link href="{{ url('/') }}/assets/css/loading.css" rel="stylesheet">
 </head>
