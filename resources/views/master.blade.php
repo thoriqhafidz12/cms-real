@@ -13,7 +13,7 @@
                     <form method="GET" action="{{ route($route . '.index') }}" class="mb-3">
                         <div class="input-group" style="max-width: 300px;">
                             <input type="text" name="search" class="form-control bg-light border-0 small"
-                                   placeholder="Cari nama atau email..." value="{{ $search ?? '' }}">
+                                placeholder="Cari ..." value="{{ $search ?? '' }}">
                             <div class="input-group-append">
                                 <button class="btn btn-primary" type="submit">
                                     <i class="fas fa-search fa-sm"></i>
@@ -26,32 +26,39 @@
                         <table class="table table-bordered" width="100%" cellspacing="0">
                             <thead>
                                 <tr>
-                                    <th>#</th>
-                                    <th>Nama</th>
-                                    <th>Email</th>
-                                    <th>Role</th>
-                                    <th>Dibuat</th>
+                                    <th>No</th>
+                                    @foreach ($grid as $column)
+                                        <th>{{ $column['label'] }}</th>
+                                    @endforeach
                                     <th>Aksi</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @forelse ($items as $item)
-                                    <tr class="{{ isset($editData) && $editData->{$primaryKey} == $item->{$primaryKey} ? 'table-warning' : '' }}">
+                                    <tr
+                                        class="{{ isset($editData) && $editData->{$primaryKey} == $item->{$primaryKey} ? 'table-warning' : '' }}">
                                         <td>{{ $loop->iteration + $items->firstItem() - 1 }}</td>
-                                        <td>{{ $item->name }}</td>
-                                        <td>{{ $item->email }}</td>
-                                        <td>
-                                            <span class="badge badge-primary">{{ $item->roleRelation->rNama ?? '-' }}</span>
-                                        </td>
-                                        <td>{{ $item->created_at }}</td>
+                                        @foreach ($grid as $column)
+                                            <td>
+                                                @if ($column['type'] === 'text')
+                                                    {{ $item->{$column['field']} ?? '-' }}
+                                                @elseif ($column['type'] === 'icon')
+                                                    <i class="fas {{ $item->{$column['field']} }}"></i>
+                                                @elseif ($column['type'] === 'badge')
+                                                    <span class="badge badge-primary">{{ $item->{$column['field']} }}</span>
+                                                @else
+                                                    {{ $item->{$column['field']} ?? '-' }}
+                                                @endif
+                                            </td>
+                                        @endforeach
                                         <td>
                                             <a href="{{ route($route . '.index', ['edit' => $item->{$primaryKey}]) }}"
-                                               class="btn btn-warning btn-sm">
+                                                class="btn btn-warning btn-sm">
                                                 <i class="fas fa-edit"></i>
                                             </a>
                                             <form action="{{ route($route . '.destroy', $item->{$primaryKey}) }}"
-                                                  method="POST" class="d-inline"
-                                                  onsubmit="return confirm('Hapus data ini?')">
+                                                method="POST" class="d-inline"
+                                                onsubmit="return confirm('Hapus data ini?')">
                                                 @csrf
                                                 @method('DELETE')
                                                 <button type="submit" class="btn btn-danger btn-sm">
@@ -62,15 +69,23 @@
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="6" class="text-center text-muted">Tidak ada data.</td>
+                                        <td colspan="{{ count($grid) + 2 }}" class="text-center text-muted">
+                                            Tidak ada data.
+                                        </td>
                                     </tr>
                                 @endforelse
                             </tbody>
                         </table>
                     </div>
 
-                    <div class="d-flex justify-content-end">
-                        {{ $items->links() }}
+                    <div class="d-flex justify-content-between align-items-center mt-3">
+                        <small class="text-muted">
+                            Menampilkan {{ $items->firstItem() ?? 0 }} - {{ $items->lastItem() ?? 0 }}
+                            dari {{ $items->total() }} data
+                        </small>
+                        <div>
+                            {{ $items->links('pagination::bootstrap-4') }}
+                        </div>
                     </div>
                 </div>
             </div>

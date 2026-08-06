@@ -62,6 +62,35 @@ class MenuController extends BaseController
             ],
         ];
 
+        $this->grid = 
+        [
+            [
+                'label' => 'Nama Menu',
+                'field' => 'mNama',
+                'type' => 'text'
+            ],
+            [
+                'label' => 'Route Prefix',
+                'field' => 'mRoute',
+                'type' => 'text'
+            ],
+            [
+                'label' => 'Icon',
+                'field' => 'mIcon',
+                'type' => 'icon'
+            ],
+            [
+                'label' => 'Urutan',
+                'field' => 'mOrder',
+                'type' => 'text'
+            ],
+            [
+                'label' => 'Parent Menu',
+                'field' => 'parentNama',
+                'type' => 'text'
+            ]
+        ];
+
         $this->extraViewData = [
             'parentMenus' => fn() => Menu::whereNull('mParentId')
                 ->where('mIsActive', 1)
@@ -78,7 +107,8 @@ class MenuController extends BaseController
         $search = $request->get('search');
         $editId = $request->get('edit');
 
-        $query = Menu::query();
+        $query = Menu::leftJoin('menu as parent', 'menu.mParentId', '=', 'parent.mId')
+            ->select('menu.*', 'parent.mNama as parentNama');
 
         if ($search && $this->searchColumn) {
             $columns = (array) $this->searchColumn;
@@ -103,7 +133,7 @@ class MenuController extends BaseController
             $extra[$key] = is_callable($resolver) ? $resolver() : $resolver;
         }
 
-        return view('menus.index', array_merge([
+        return view('master', array_merge([
             'items' => $items,
             'search' => $search,
             'editData' => $editData,
@@ -111,6 +141,7 @@ class MenuController extends BaseController
             'route' => $this->route,
             'primaryKey' => $this->primaryKey,
             'titlePage' => $this->titlePage,
+            'grid' => $this->grid,
         ], $extra));
     }
 

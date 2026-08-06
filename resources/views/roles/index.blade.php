@@ -69,8 +69,14 @@
                         </table>
                     </div>
 
-                    <div class="d-flex justify-content-end">
-                        {{ $items->links() }}
+                    <div class="d-flex justify-content-between align-items-center mt-3">
+                        <small class="text-muted">
+                            Menampilkan {{ $items->firstItem() ?? 0 }} - {{ $items->lastItem() ?? 0 }}
+                            dari {{ $items->total() }} data
+                        </small>
+                        <div>
+                            {{ $items->links('pagination::bootstrap-4') }}
+                        </div>
                     </div>
                 </div>
             </div>

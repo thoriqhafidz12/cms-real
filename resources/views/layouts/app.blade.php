@@ -10,7 +10,7 @@
         </div>
     </div>
     <div id="Moduleloader-page" class="jssorl-009-spin">
-        <img src="image/spin.svg">
+        <img src="assets/img/spinner.svg">
     </div>
     <div class="bottom-slide">
         <div id="wrapper">
@@ -159,7 +159,7 @@
                                     <span
                                         class="mr-2 d-none d-lg-inline text-gray-600 small">{{ Auth::user()->name }}</span>
                                     <img class="img-profile rounded-circle"
-                                        src="{{ url('/') }}/assets/img/undraw_profile.svg">
+                                        src="{{ url('/') }}/assets/img/user.svg">
                                 </a>
 
                                 <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in"

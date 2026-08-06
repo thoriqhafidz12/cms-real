@@ -59,6 +59,24 @@ class UserController extends BaseController
             ],
         ];
 
+        $this->grid = [
+            [
+                'label' => 'Nama',
+                'field' => 'name',
+                'type' => 'text'
+            ],
+            [
+                'label' => 'Email',
+                'field' => 'email',
+                'type' => 'text'
+            ],
+            [
+                'label' => 'Role',
+                'field' => 'rNama',
+                'type' => 'text'
+            ]
+        ];
+
         $this->extraViewData = [
             'roles' => fn() => Role::orderBy('rNama')->get(),
         ];
@@ -72,7 +90,8 @@ class UserController extends BaseController
         $search = $request->get('search');
         $editId = $request->get('edit');
 
-        $query = User::query()->with('roleRelation');
+        $query = User::leftJoin('role', 'users.role', '=', 'role.rId')
+            ->select('users.*', 'role.rNama');
 
         if ($search && $this->searchColumn) {
             $columns = (array) $this->searchColumn;
@@ -97,7 +116,7 @@ class UserController extends BaseController
             $extra[$key] = is_callable($resolver) ? $resolver() : $resolver;
         }
 
-        return view('users.index', array_merge([
+        return view('master', array_merge([
             'items' => $items,
             'search' => $search,
             'editData' => $editData,
@@ -105,6 +124,7 @@ class UserController extends BaseController
             'route' => $this->route,
             'primaryKey' => $this->primaryKey,
             'titlePage' => $this->titlePage,
+            'grid' => $this->grid
         ], $extra));
     }
 
