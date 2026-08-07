@@ -59,6 +59,7 @@ class MenuController extends BaseController
                 'col' => 'col-md-12',
                 'required' => false,
                 'options' => [], // diisi dynamic via extraViewData
+                'exists' => 'menu,mId',
             ],
         ];
 

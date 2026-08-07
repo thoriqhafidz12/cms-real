@@ -30,6 +30,43 @@
                     <span class="invalid-feedback">{{ $message }}</span>
                 @enderror
             </div>
+        @elseif ($field['type'] === 'angka')
+            @php
+                $displayVal = $oldVal ? number_format((float) $oldVal, 0, ',', '.') : '';
+                $rawVal = $oldVal ?? '';
+            @endphp
+            <div class="{{ $field['col'] ?? 'col-md-12' }} mb-2">
+                <label>
+                    {{ $field['label'] }}
+                    @if (!empty($field['required']))
+                        <span class="text-danger">*</span>
+                    @endif
+                </label>
+                <input type="text" id="{{ $field['name'] }}_display"
+                    class="form-control @error($field['name']) is-invalid @enderror" value="{{ $displayVal }}"
+                    placeholder="{{ $field['placeholder'] }}" {{ !empty($field['required']) ? 'required' : '' }}
+                    oninput="autoNumericDot(this, '{{ $field['name'] }}')"
+                    autocomplete="off">
+                <input type="hidden" name="{{ $field['name'] }}" id="{{ $field['name'] }}" value="{{ $rawVal }}">
+                @error($field['name'])
+                    <span class="invalid-feedback">{{ $message }}</span>
+                @enderror
+            </div>
+        @elseif ($field['type'] === 'date')
+            <div class="{{ $field['col'] ?? 'col-md-12' }} mb-2">
+                <label>
+                    {{ $field['label'] }}
+                    @if (!empty($field['required']))
+                        <span class="text-danger">*</span>
+                    @endif
+                </label>
+                <input type="{{ $field['type'] }}" name="{{ $field['name'] }}" id="{{ $field['name'] }}"
+                    class="form-control @error($field['name']) is-invalid @enderror" value="{{ $oldVal }}"
+                    placeholder="{{ $field['placeholder'] }}" {{ !empty($field['required']) ? 'required' : '' }}>
+                @error($field['name'])
+                    <span class="invalid-feedback">{{ $message }}</span>
+                @enderror
+            </div>
         @elseif ($field['type'] === 'select')
             @php
                 // Resolve options dari variable yang tersedia di view

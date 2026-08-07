@@ -4,6 +4,7 @@ use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\MenuController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\Keuangan\PenerimaanController;
 use App\Models\Menu;
 use App\Models\Role;
 use App\Models\User;
@@ -36,7 +37,7 @@ Route::middleware('auth')->group(function () {
     Route::resource('roles', RoleController::class);
     Route::resource('users', UserController::class);
     Route::resource('menus', MenuController::class);
-    // Route::resource('setting', MenuController::class);
+    Route::resource('penerimaan', PenerimaanController::class);
 });
 
 // Redirect root to login or dashboard
