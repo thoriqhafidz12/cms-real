@@ -1,20 +1,22 @@
-# 🚀 CMS Real - Laravel 13
+# 🚀 Laravel 13 Installation Guide
 
-Panduan instalasi project Laravel 13 menggunakan Docker.
+Panduan instalasi project **CMS Real** menggunakan Docker.
 
-## Requirements
+## Prerequisites
 
-Pastikan sudah menginstall:
+Pastikan perangkat telah terinstall:
 
-* Git
+* PHP 8.3+ (untuk Composer)
+* Composer
 * Docker
 * Docker Compose
+* Git
 
 ---
 
 ## 1. Clone Repository
 
-Clone repository dan pilih branch yang ingin digunakan.
+Clone project sesuai branch yang ingin digunakan.
 
 ```bash
 git clone -b <branch> https://github.com/thoriqhafidz12/cms-real.git <nama_folder>
@@ -23,7 +25,7 @@ git clone -b <branch> https://github.com/thoriqhafidz12/cms-real.git <nama_folde
 Contoh:
 
 ```bash
-git clone -b develop https://github.com/thoriqhafidz12/cms-real.git cms-real
+git clone -b development https://github.com/thoriqhafidz12/cms-real.git cms-real
 ```
 
 Masuk ke folder project.
@@ -34,7 +36,25 @@ cd <nama_folder>
 
 ---
 
-## 2. Setup Environment
+## 2. Install Dependency
+
+Jalankan salah satu perintah berikut:
+
+```bash
+composer install
+```
+
+atau
+
+```bash
+composer update
+```
+
+> **Disarankan menggunakan `composer install`** apabila file `composer.lock` tersedia agar dependency sesuai dengan versi project.
+
+---
+
+## 3. Setup Environment
 
 Salin file environment.
 
@@ -42,25 +62,23 @@ Salin file environment.
 cp .env.example .env
 ```
 
-Sesuaikan konfigurasi pada file `.env` apabila diperlukan, seperti:
+Kemudian sesuaikan konfigurasi pada file `.env` apabila diperlukan, seperti:
 
 * Database
-* APP_URL
-* Mail
 * Redis
+* Mail
+* APP_URL
 * dan konfigurasi lainnya
 
 ---
 
-## 3. Jalankan Docker
-
-Build image dan jalankan seluruh container.
+## 4. Build dan Jalankan Docker
 
 ```bash
 docker compose up -d --build
 ```
 
-Pastikan seluruh container berjalan.
+Pastikan seluruh container berhasil berjalan.
 
 ```bash
 docker ps
@@ -68,9 +86,9 @@ docker ps
 
 ---
 
-## 4. Masuk ke Container PHP
+## 5. Masuk ke Container PHP
 
-Cari ID atau nama container yang menjalankan Laravel.
+Cari ID atau nama container terlebih dahulu.
 
 ```bash
 docker ps
@@ -84,7 +102,7 @@ docker exec -it <id_container> /bin/bash
 
 ---
 
-## 5. Generate Application Key
+## 6. Generate Application Key
 
 Di dalam container jalankan:
 
@@ -94,9 +112,9 @@ php artisan key:generate
 
 ---
 
-## 6. Migrasi Database dan Seeder
+## 7. Jalankan Migration dan Seeder
 
-Jalankan perintah berikut untuk membuat seluruh tabel dan mengisi data awal.
+Masih di dalam container, jalankan:
 
 ```bash
 php artisan migrate:fresh --seed
@@ -104,8 +122,69 @@ php artisan migrate:fresh --seed
 
 ---
 
-## 🎉 Instalasi Selesai
+## ✅ Instalasi Selesai
 
-Apabila seluruh proses berhasil, aplikasi Laravel siap dijalankan.
+Apabila seluruh proses berhasil, aplikasi siap dijalankan.
 
-Jika menggunakan Docker Compose, aplikasi dapat diakses melalui URL yang telah dikonfigurasi pada file `.env` atau port yang diekspos pada `docker-compose.yml`.
+Untuk memastikan aplikasi berjalan dengan baik:
+
+```bash
+php artisan optimize
+```
+
+Kemudian akses aplikasi melalui URL yang telah dikonfigurasi pada Docker atau `APP_URL`.
+
+---
+
+## Troubleshooting
+
+### Permission Error
+
+Jika mengalami masalah permission pada folder `storage` atau `bootstrap/cache`, jalankan:
+
+```bash
+chmod -R 775 storage bootstrap/cache
+```
+
+---
+
+### Container Tidak Berjalan
+
+Cek status container:
+
+```bash
+docker ps -a
+```
+
+Lihat log container:
+
+```bash
+docker compose logs -f
+```
+
+---
+
+### Migration Gagal
+
+Pastikan:
+
+* Database sudah aktif.
+* Konfigurasi `.env` sudah benar.
+* Container database telah berjalan sebelum menjalankan migration.
+
+---
+
+## Development Workflow
+
+Apabila terdapat perubahan pada Dockerfile atau konfigurasi service:
+
+```bash
+docker compose down
+docker compose up -d --build
+```
+
+Untuk melihat log aplikasi:
+
+```bash
+docker compose logs -f
+```
