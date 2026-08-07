@@ -21,4 +21,7 @@
     <link href="{{ url('/') }}/assets/css/custom.css" rel="stylesheet">
     <!-- Custom styles for this page -->
     <link href="{{ url('/') }}/assets/vendor/datatables/dataTables.bootstrap4.min.css" rel="stylesheet">
+    <!-- SweetAlert2 -->
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet" />
+    @stack('styles')
 </head>

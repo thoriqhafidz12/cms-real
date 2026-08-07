@@ -139,6 +139,7 @@ abstract class BaseController extends Controller
                     $fieldRules[] = 'min:4';
                     break;
                 case 'select':
+                case 'autocomplete':
                     $fieldRules[] = 'integer';
                     if (!empty($field['exists'])) {
                         $fieldRules[] = 'exists:' . $field['exists'];

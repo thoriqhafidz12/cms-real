@@ -50,8 +50,7 @@
                                                 <i class="fas fa-edit"></i>
                                             </a>
                                             <form action="{{ route($route . '.destroy', $item->{$primaryKey}) }}"
-                                                  method="POST" class="d-inline"
-                                                  onsubmit="return confirm('Hapus data ini?')">
+                                                  method="POST" class="d-inline form-delete">
                                                 @csrf
                                                 @method('DELETE')
                                                 <button type="submit" class="btn btn-danger btn-sm">

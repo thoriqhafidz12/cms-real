@@ -1,12 +1,11 @@
 <?php
 
-namespace App\Http\Controllers\Keuangan;
+namespace App\Http\Controllers\Keuangan\Kas;
 
 use App\Http\Controllers\BaseController;
+use App\Models\JenisPenerimaanModel;
 use App\Models\PenerimaanModel;
-use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\View\View;
 
 class PenerimaanController extends BaseController
@@ -41,10 +40,16 @@ class PenerimaanController extends BaseController
             [
                 'name' => 'trJenisTrans',
                 'label' => 'Jenis Transaksi',
-                'placeholder' => 'Masukkan jenis transaksi',
-                'type' => 'text',
+                'placeholder' => '-- Cari dan pilih jenis --',
+                'type' => 'autocomplete',
                 'col' => 'col-md-12',
                 'required' => true,
+                'autocomplete' => [
+                    'url' => route('api.jenis-penerimaan.search'),
+                    'textField' => 'msJnsNama',
+                    'valueField' => 'msJnsId',
+                ],
+                'exists' => 'msJnsTerima,msJnsId',
             ],
             [
                 'name' => 'trNominal',
@@ -87,7 +92,7 @@ class PenerimaanController extends BaseController
             ],
             [
                 'label' => 'Jenis Transaksi',
-                'field' => 'trJenisTrans',
+                'field' => 'msJnsNama',
                 'type' => 'text'
             ],
             [
@@ -127,7 +132,7 @@ class PenerimaanController extends BaseController
             });
         }
 
-        $items = $query->orderBy($this->primaryKey, 'desc')
+        $items = $query->leftjoin('msJnsTerima', 'trPenerimaan.trJenisTrans', '=', 'msJnsTerima.msJnsId')->orderBy($this->primaryKey, 'desc')
             ->paginate(10)
             ->withQueryString();
 
@@ -137,9 +142,18 @@ class PenerimaanController extends BaseController
         }
 
         $extra = [];
-        // foreach ($this->extraViewData as $key => $resolver) {
-        //     $extra[$key] = is_callable($resolver) ? $resolver() : $resolver;
-        // }
+        foreach ($this->extraViewData as $key => $resolver) {
+            $extra[$key] = is_callable($resolver) ? $resolver() : $resolver;
+        }
+
+        // Resolve display text untuk autocomplete saat edit
+        if ($editData) {
+            $extra['autocompleteSelected'] = [
+                'trJenisTrans' => optional(
+                    JenisPenerimaanModel::find($editData->trJenisTrans)
+                )->msJnsNama,
+            ];
+        }
 
         return view('master', array_merge([
             'items' => $items,

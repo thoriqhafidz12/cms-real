@@ -1,5 +1,7 @@
  <!-- Bootstrap core JavaScript-->
  <script src="{{ url('/') }}/assets/vendor/jquery/jquery.min.js"></script>
+ <!-- SweetAlert2 -->
+ <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
  <script src="{{ url('/') }}/assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
 
  <!-- Core plugin JavaScript-->
