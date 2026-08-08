@@ -3,6 +3,7 @@
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Keuangan\Kas\PenerimaanController;
 use App\Http\Controllers\Keuangan\Master\MasterJenisPenerimaanController;
+use App\Http\Controllers\Keuangan\Master\MasterJenisPengeluaranController;
 use App\Http\Controllers\MenuController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserController;
@@ -42,10 +43,13 @@ Route::middleware('auth')->group(function () {
 
     // MENU MASTER
     Route::resource('master-jenis-penerimaan', MasterJenisPenerimaanController::class);
+    Route::resource('master-jenis-pengeluaran', MasterJenisPengeluaranController::class);
 
     // API autocomplete
     Route::get('api/jenis-penerimaan/search', [MasterJenisPenerimaanController::class, 'search'])
         ->name('api.jenis-penerimaan.search');
+    Route::get('api/jenis-pengeluaran/search', [MasterJenisPengeluaranController::class, 'search'])
+        ->name('api.jenis-pengeluaran.search');
 
     // MENU KAS
     Route::resource('penerimaan', PenerimaanController::class);

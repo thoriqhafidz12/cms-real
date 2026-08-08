@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Keuangan\Kas;
 
 use App\Http\Controllers\BaseController;
-use App\Models\JenisPenerimaanModel;
+use App\Models\Master\JenisPenerimaanModel;
 use App\Models\PenerimaanModel;
 use Illuminate\Http\Request;
 use Illuminate\View\View;

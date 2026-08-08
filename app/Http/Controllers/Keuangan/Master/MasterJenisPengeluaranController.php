@@ -3,27 +3,27 @@
 namespace App\Http\Controllers\Keuangan\Master;
 
 use App\Http\Controllers\BaseController;
-use App\Models\Master\JenisPenerimaanModel;
+use App\Models\Master\JenisPengeluaranModel;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
-class MasterJenisPenerimaanController extends BaseController
+class MasterJenisPengeluaranController extends BaseController
 {
     public function __construct()
     {
-        $this->model = JenisPenerimaanModel::class;
-        $this->route = 'master-jenis-penerimaan';
-        $this->titlePage = 'Daftar Jenis Penerimaan';
-        $this->primaryKey = 'msJnsId';
-        $this->table = 'msJnsTerima';
-        $this->searchColumn = ['msJnsNama'];
+        $this->model = JenisPengeluaranModel::class;
+        $this->route = 'master-jenis-pengeluaran';
+        $this->titlePage = 'Daftar Jenis Pengeluaran';
+        $this->primaryKey = 'msJnsKelId';
+        $this->table = 'msJnsKeluar';
+        $this->searchColumn = ['msJnsKelNama'];
 
         $this->form = [
             [
-                'name' => 'msJnsNama',
-                'label' => 'Nama Jenis Penerimaan',
-                'placeholder' => 'Masukkan nama jenis penerimaan',
+                'name' => 'msJnsKelNama',
+                'label' => 'Nama Jenis Pengeluaran',
+                'placeholder' => 'Masukkan nama jenis pengeluaran',
                 'type' => 'text',
                 'col' => 'col-md-12',
                 'required' => true,
@@ -33,7 +33,7 @@ class MasterJenisPenerimaanController extends BaseController
         $this->grid = [
             [
                 'label' => 'Nama',
-                'field' => 'msJnsNama',
+                'field' => 'msJnsKelNama',
                 'type' => 'text'
             ],
         ];
@@ -81,30 +81,30 @@ class MasterJenisPenerimaanController extends BaseController
 
     protected function beforeSave(array $data, $record = null): array
     {
-        $data['msJnsCreatedBy'] = auth()->user()->name;
-        $data['msJnsUpdatedBy'] = auth()->user()->name;
+        $data['msJnsKelCreatedBy'] = auth()->user()->name;
+        $data['msJnsKelUpdatedBy'] = auth()->user()->name;
 
         return $data;
     }
 
     protected function beforeUpdate(array $data, $record): array
     {
-        $data['msJnsUpdatedBy'] = auth()->user()->name;
+        $data['msJnsKelUpdatedBy'] = auth()->user()->name;
 
         return $data;
     }
 
     /**
      * API search untuk autocomplete select2.
-     * GET /api/jenis-penerimaan/search?search=keyword
+     * GET /api/jenis-pengeluaran/search?search=keyword
      */
     public function search(Request $request): JsonResponse
     {
         $search = $request->get('search');
-        $data = JenisPenerimaanModel::where('msJnsNama', 'like', "%{$search}%")
-            ->orderBy('msJnsNama')
+        $data = JenisPengeluaranModel::where('msJnsKelNama', 'like', "%{$search}%")
+            ->orderBy('msJnsKelNama')
             ->limit(20)
-            ->get(['msJnsId', 'msJnsNama']);
+            ->get(['msJnsKelId', 'msJnsKelNama']);
 
         return response()->json($data);
     }
