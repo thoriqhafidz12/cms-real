@@ -339,11 +339,26 @@ transition: all 0.5s cubic-bezier(0.75, 0.2, 0.26, 0.7);
     border-bottom: none;
 }
 
-/* Hover — text putih + gradient background */
+/* Hover — text putih + gradient background + centang kanan */
 .select2-dropdown-custom .select2-results__option--highlighted {
     background: linear-gradient(135deg, #121358 0%, #232F72 100%) !important;
     color: #fff !important;
-    padding-left: 1.15rem !important;
+    padding-left: 0.9rem !important;
+    padding-right: 2rem !important;
+    position: relative !important;
+}
+
+/* Centang di pojok kanan saat hover */
+.select2-dropdown-custom .select2-results__option--highlighted::after {
+    content: '✓';
+    position: absolute;
+    right: 0.85rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #fff;
+    font-size: 0.9rem;
+    font-weight: 700;
+    opacity: 0.9;
 }
 
 /* Pastikan semua child element ikut putih saat hover */
@@ -360,17 +375,24 @@ transition: all 0.5s cubic-bezier(0.75, 0.2, 0.26, 0.7);
     color: rgba(255, 255, 255, 0.75) !important;
 }
 
-/* Selected option (yg sudah dipilih sebelumnya) */
+/* Selected option (yg sudah dipilih sebelumnya) — centang hijau di kiri */
 .select2-dropdown-custom .select2-results__option[aria-selected="true"] {
     background-color: #eaecf4 !important;
     color: #121358 !important;
     font-weight: 600;
+    padding-right: 1.5rem !important;
 }
 
 .select2-dropdown-custom .select2-results__option[aria-selected="true"]::before {
-    content: '✓ ';
+    content: '✓';
     color: #1cc88a;
     font-weight: 700;
+    margin-right: 0.4rem;
+}
+
+/* Jika selected DAN sedang di-hover, centang kanan tetap putih */
+.select2-dropdown-custom .select2-results__option[aria-selected="true"].select2-results__option--highlighted::after {
+    color: #fff;
 }
 
 /* Loading state */

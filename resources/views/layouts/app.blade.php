@@ -21,9 +21,9 @@
                 <a class="sidebar-brand d-flex align-items-center justify-content-center"
                     href="{{ route('dashboard') }}">
                     <div class="sidebar-brand-icon rotate-n-15">
-                        <i class="fas fa-laugh-wink"></i>
+                        <i class="fas fa-file-invoice-dollar"></i>
                     </div>
-                    <div class="sidebar-brand-text mx-3">CMS Admin</div>
+                    <div class="sidebar-brand-text mx-3">KEURIQ-TH</div>
                 </a>
 
                 <hr class="sidebar-divider my-0">
@@ -210,7 +210,7 @@
                 <footer class="sticky-footer bg-white">
                     <div class="container my-auto">
                         <div class="copyright text-center my-auto">
-                            <span>Copyright &copy; CMS {{ date('Y') }}</span>
+                            <span>Copyright &copy; KEURIQ-TH {{ date('Y') }}</span>
                         </div>
                     </div>
                 </footer>
