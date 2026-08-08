@@ -2,22 +2,22 @@
 
 namespace App\Http\Controllers\Keuangan\Kas;
 
-use App\Http\Controllers\BaseController;
-use App\Models\Master\JenisPenerimaanModel;
-use App\Models\Kas\PenerimaanModel;
 use Illuminate\Http\Request;
+use App\Http\Controllers\BaseController;
+use App\Models\Kas\PengeluaranModel;
+use App\Models\Master\JenisPengeluaranModel;
 use Illuminate\View\View;
 
-class PenerimaanController extends BaseController
+class PengeluaranController extends BaseController
 {
     public function __construct()
     {
-        $this->model = PenerimaanModel::class;
-        $this->route = 'penerimaan';
-        $this->titlePage = 'Daftar Penerimaan';
-        $this->primaryKey = 'trId';
-        $this->table = 'tr_penerimaan';
-        $this->searchColumn = ['trNoTrans', 'trKeterangan'];
+        $this->model = PengeluaranModel::class;
+        $this->route = 'pengeluaran';
+        $this->titlePage = 'Daftar Pengeluaran';
+        $this->primaryKey = 'trKelId';
+        $this->table = 'tr_pengeluaran';
+        $this->searchColumn = ['trKelNoTrans', 'trKelKeterangan'];
         $this->withRelation = 'roleRelation';
 
         $this->form = [
@@ -30,7 +30,7 @@ class PenerimaanController extends BaseController
             //     'required' => true,
             // ],
             [
-                'name' => 'trTanggal',
+                'name' => 'trKelTanggal',
                 'label' => 'Tanggal',
                 'placeholder' => 'Masukkan tanggal',
                 'type' => 'date',
@@ -38,21 +38,21 @@ class PenerimaanController extends BaseController
                 'required' => true,
             ],
             [
-                'name' => 'trJenisTrans',
+                'name' => 'trKelJenisTrans',
                 'label' => 'Jenis Transaksi',
                 'placeholder' => '-- Cari dan pilih jenis --',
                 'type' => 'autocomplete',
                 'col' => 'col-md-12',
                 'required' => true,
                 'autocomplete' => [
-                    'url' => route('api.jenis-penerimaan.search'),
-                    'textField' => 'msJnsNama',
-                    'valueField' => 'msJnsId',
+                    'url' => route('api.jenis-pengeluaran.search'),
+                    'textField' => 'msJnsKelNama',
+                    'valueField' => 'msJnsKelId',
                 ],
-                'exists' => 'ms_jns_terima,msJnsId',
+                'exists' => 'ms_jns_keluar,msJnsKelId',
             ],
             [
-                'name' => 'trTerimaNominal',
+                'name' => 'trKelNominal',
                 'label' => 'Nominal',
                 'placeholder' => 'Masukkan nominal',
                 'type' => 'angka',
@@ -60,7 +60,7 @@ class PenerimaanController extends BaseController
                 'required' => true
             ],
             [
-                'name' => 'trKeterangan',
+                'name' => 'trKelKeterangan',
                 'label' => 'Keterangan',
                 'placeholder' => 'Masukkan keterangan',
                 'type' => 'text',
@@ -87,23 +87,23 @@ class PenerimaanController extends BaseController
             // ],
             [
                 'label' => 'Tanggal',
-                'field' => 'trTanggal',
+                'field' => 'trKelTanggal',
                 'type' => 'date'
             ],
             [
                 'label' => 'Jenis Transaksi',
-                'field' => 'msJnsNama',
+                'field' => 'msJnsKelNama',
                 'type' => 'text'
             ],
             [
                 'label' => 'Nominal',
-                'field' => 'trTerimaNominal',
+                'field' => 'trKelNominal',
                 'type' => 'angka',
                 'class' => 'text-right'
             ],
             [
                 'label' => 'Keterangan',
-                'field' => 'trKeterangan',
+                'field' => 'trKelKeterangan',
                 'type' => 'text'
             ]
         ];
@@ -120,7 +120,7 @@ class PenerimaanController extends BaseController
     {
         $search = $request->get('search');
         $editId = $request->get('edit');
-
+        
         $userId = auth()->user()->id; // Get the authenticated user's ID
 
         $query = $this->model::query();
@@ -134,9 +134,7 @@ class PenerimaanController extends BaseController
             });
         }
 
-        $items = $query->leftjoin('ms_jns_terima', 'tr_penerimaan.trJenisTrans', '=', 'ms_jns_terima.msJnsId')
-            ->where('trTerimaUserId', $userId)
-            ->orderBy($this->primaryKey, 'desc')
+        $items = $query->leftjoin('ms_jns_keluar', 'tr_pengeluaran.trKelJenisTrans', '=', 'ms_jns_keluar.msJnsKelId')->orderBy($this->primaryKey, 'desc')->where('trKelUserId', $userId)
             ->paginate(10)
             ->withQueryString();
 
@@ -153,9 +151,9 @@ class PenerimaanController extends BaseController
         // Resolve display text untuk autocomplete saat edit
         if ($editData) {
             $extra['autocompleteSelected'] = [
-                'trJenisTrans' => optional(
-                    JenisPenerimaanModel::find($editData->trJenisTrans)
-                )->msJnsNama,
+                'trKelJenisTrans' => optional(
+                    JenisPengeluaranModel::find($editData->trKelJenisTrans)
+                )->msJnsKelNama,
             ];
         }
 
@@ -173,17 +171,18 @@ class PenerimaanController extends BaseController
 
     protected function beforeSave(array $data, $record = null): array
     {
-        $data['trTerimaUserId'] = auth()->user()->id;
-        $data['trCreatedBy'] = auth()->user()->name;
-        $data['trUpdatedBy'] = auth()->user()->name;
+        $data['trKelUserId'] = auth()->user()->id;
+        $data['trKelCreatedBy'] = auth()->user()->name;
+        $data['trKelUpdatedBy'] = auth()->user()->name;
 
         return $data;
     }
 
     protected function beforeUpdate(array $data, $record): array
     {
-        $data['trUpdatedBy'] = auth()->user()->name;
+        $data['trKelUpdatedBy'] = auth()->user()->name;
 
         return $data;
     }
 }
+

@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Keuangan\Kas\PenerimaanController;
+use App\Http\Controllers\Keuangan\Kas\PengeluaranController;
 use App\Http\Controllers\Keuangan\Master\MasterJenisPenerimaanController;
 use App\Http\Controllers\Keuangan\Master\MasterJenisPengeluaranController;
 use App\Http\Controllers\MenuController;
@@ -53,6 +54,7 @@ Route::middleware('auth')->group(function () {
 
     // MENU KAS
     Route::resource('penerimaan', PenerimaanController::class);
+    Route::resource('pengeluaran', PengeluaranController::class);
 });
 
 // Redirect root to login or dashboard

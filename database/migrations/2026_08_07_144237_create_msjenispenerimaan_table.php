@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('msJnsTerima', function (Blueprint $table) {
+        Schema::create('ms_jns_terima', function (Blueprint $table) {
             $table->bigInteger('msJnsId')->autoIncrement();
             $table->string('msJnsNama', 255)->nullable();
             $table->dateTime('msJnsCreateTime')->useCurrent();
@@ -27,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('msJnsTerima');
+        Schema::dropIfExists('ms_jns_terima');
     }
 };

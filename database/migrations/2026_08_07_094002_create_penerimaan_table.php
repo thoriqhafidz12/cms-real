@@ -10,14 +10,14 @@ return new class extends Migration {
      */
     public function up(): void
     {
-        Schema::create('trPenerimaan', function (Blueprint $table) {
+        Schema::create('tr_penerimaan', function (Blueprint $table) {
             $table->bigIncrements('trId');
             $table->string('trNoTrans', 100)->nullable();
             $table->date('trTanggal')->nullable();
             $table->string('trJenisTrans', 225)->nullable();
-            $table->decimal('trNominal', 20, 2)->default(0);
+            $table->decimal('trTerimaNominal', 20, 2)->default(0);
+            $table->integer('trTerimaUserId')->nullable();
             $table->text('trKeterangan')->nullable();
-
             $table->dateTime('trCreateTime')->useCurrent();
             $table->string('trCreatedBy', 255)->nullable();
             $table->dateTime('trUpdateTime')->useCurrentOnUpdate()->nullable();
@@ -30,6 +30,6 @@ return new class extends Migration {
      */
     public function down(): void
     {
-        Schema::dropIfExists('trPenerimaan');
+        Schema::dropIfExists('tr_penerimaan');
     }
 };

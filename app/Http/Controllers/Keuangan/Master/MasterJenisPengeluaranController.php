@@ -16,7 +16,7 @@ class MasterJenisPengeluaranController extends BaseController
         $this->route = 'master-jenis-pengeluaran';
         $this->titlePage = 'Daftar Jenis Pengeluaran';
         $this->primaryKey = 'msJnsKelId';
-        $this->table = 'msJnsKeluar';
+        $this->table = 'ms_jns_keluar';
         $this->searchColumn = ['msJnsKelNama'];
 
         $this->form = [

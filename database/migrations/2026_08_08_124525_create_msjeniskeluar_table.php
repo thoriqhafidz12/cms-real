@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('msJnsKeluar', function (Blueprint $table) {
+        Schema::create('ms_jns_keluar', function (Blueprint $table) {
             $table->bigInteger('msJnsKelId')->autoIncrement();
             $table->string('msJnsKelNama', 255)->nullable();
             $table->dateTime('msJnsKelCreateTime')->useCurrent();
@@ -27,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('msJnsKeluar');
+        Schema::dropIfExists('ms_jns_keluar');
     }
 };

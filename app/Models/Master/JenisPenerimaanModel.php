@@ -7,10 +7,10 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Table;
 
 #[Fillable(['msJnsNama', 'msJnsCreatedBy', 'msJnsUpdatedBy'])]
-#[Table('msJnsTerima')]
+#[Table('ms_jns_terima')]
 class JenisPenerimaanModel extends Model
 {
-    protected $table = 'msJnsTerima';
+    protected $table = 'ms_jns_terima';
     protected $primaryKey = 'msJnsId';
     public $timestamps = false;
 }

@@ -16,7 +16,7 @@ class MasterJenisPenerimaanController extends BaseController
         $this->route = 'master-jenis-penerimaan';
         $this->titlePage = 'Daftar Jenis Penerimaan';
         $this->primaryKey = 'msJnsId';
-        $this->table = 'msJnsTerima';
+        $this->table = 'ms_jns_terima';
         $this->searchColumn = ['msJnsNama'];
 
         $this->form = [
