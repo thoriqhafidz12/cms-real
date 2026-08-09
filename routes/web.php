@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Keuangan\Kas\PenerimaanController;
 use App\Http\Controllers\Keuangan\Kas\PengeluaranController;
 use App\Http\Controllers\Keuangan\Master\MasterJenisPenerimaanController;
@@ -9,9 +10,6 @@ use App\Http\Controllers\Laporan\ArusKasController;
 use App\Http\Controllers\MenuController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserController;
-use App\Models\Menu;
-use App\Models\Role;
-use App\Models\User;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/getSession', [LoginController::class, 'checkSession'])->name('session.check');
@@ -24,13 +22,7 @@ Route::middleware('guest')->group(function () {
 
 // Authenticated routes (only accessible when logged in)
 Route::middleware('auth')->group(function () {
-    Route::get('/dashboard', function () {
-        return view('dashboard', [
-            'totalUsers' => User::count(),
-            'totalRoles' => Role::count(),
-            'totalMenus' => Menu::count(),
-        ]);
-    })->name('dashboard');
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
     Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 
