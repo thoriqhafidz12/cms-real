@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Keuangan\Kas;
 use Illuminate\Http\Request;
 use App\Http\Controllers\BaseController;
 use App\Models\Kas\PengeluaranModel;
+use App\Models\Laporan\LaporanPerfaktualModel;
 use App\Models\Master\JenisPengeluaranModel;
 use Illuminate\View\View;
 
@@ -13,6 +14,7 @@ class PengeluaranController extends BaseController
     public function __construct()
     {
         $this->model = PengeluaranModel::class;
+        $this->modelLaporan = LaporanPerfaktualModel::class;
         $this->route = 'pengeluaran';
         $this->titlePage = 'Daftar Pengeluaran';
         $this->primaryKey = 'trKelId';
@@ -120,7 +122,7 @@ class PengeluaranController extends BaseController
     {
         $search = $request->get('search');
         $editId = $request->get('edit');
-        
+
         $userId = auth()->user()->id; // Get the authenticated user's ID
 
         $query = $this->model::query();
@@ -178,11 +180,45 @@ class PengeluaranController extends BaseController
         return $data;
     }
 
-    protected function beforeUpdate(array $data, $record): array
+    public function afterSave($data): void
+    {
+        // Simpan ke tabel laporan perfaktual
+        $this->modelLaporan::create([
+            'rpHeadId' => $data['trKelId'],
+            'rpTanggal' => $data['trKelTanggal'],
+            'rpKeluarNominal' => $data['trKelNominal'],
+            'rpJenisTrans' => 2, // 2 = Pengeluaran
+            'rpKeterangan' => $data['trKelKeterangan'],
+            'rpUserId' => $data['trKelUserId'],
+            'rpCreatedBy' => $data['trKelCreatedBy'],
+            'rpUpdatedBy' => $data['trKelUpdatedBy'],
+        ]);
+    }
+
+    protected function beforeUpdate(array $data, $id): array
     {
         $data['trKelUpdatedBy'] = auth()->user()->name;
+        // Update tabel laporan perfaktual
+        $laporanRecord = $this->modelLaporan::where('rpJenisTrans', 2)->where('rpHeadId', $id)->first();
+        if ($laporanRecord) {
+            $laporanRecord->update([
+                'rpTanggal' => $data['trKelTanggal'],
+                'rpKeluarNominal' => $data['trKelNominal'],
+                'rpKeterangan' => $data['trKelKeterangan'],
+                'rpUpdatedBy' => $data['trKelUpdatedBy'],
+            ]);
+        }
 
         return $data;
+    }
+
+    public function beforeDelete($id)
+    {
+        // Hapus dari tabel laporan perfaktual
+        $laporanRecord = $this->modelLaporan::where('rpJenisTrans', 2)->where('rpHeadId', $id)->first();
+        if ($laporanRecord) {
+            $laporanRecord->delete();
+        }
     }
 }
 

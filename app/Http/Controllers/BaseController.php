@@ -71,7 +71,11 @@ abstract class BaseController extends Controller
             $this->buildValidationRules()
         );
 
-        $modelClass::create($this->beforeSave($validated, null));
+        $res = $modelClass::create($this->beforeSave($validated, null));
+
+        if (method_exists($this, 'afterSave')) {
+            $this->afterSave($res->toArray());
+        }
 
         return redirect()
             ->route($this->route . '.index')
@@ -90,7 +94,7 @@ abstract class BaseController extends Controller
             $this->buildValidationRules($id)
         );
 
-        $record->update($this->beforeUpdate($validated, $record));
+        $record->update($this->beforeUpdate($validated, $id));
 
         return redirect()
             ->route($this->route . '.index')
@@ -104,6 +108,11 @@ abstract class BaseController extends Controller
     {
         $modelClass = $this->model;
         $record = $modelClass::where($this->primaryKey, $id)->firstOrFail();
+        
+        if (method_exists($this, 'beforeDelete')) {
+            $this->beforeDelete($id);
+        }
+
         $record->delete();
 
         return redirect()

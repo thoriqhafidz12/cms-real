@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Keuangan\Kas;
 use App\Http\Controllers\BaseController;
 use App\Models\Master\JenisPenerimaanModel;
 use App\Models\Kas\PenerimaanModel;
+use App\Models\Laporan\LaporanPerfaktualModel;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
@@ -13,6 +14,7 @@ class PenerimaanController extends BaseController
     public function __construct()
     {
         $this->model = PenerimaanModel::class;
+        $this->modelLaporan = LaporanPerfaktualModel::class;
         $this->route = 'penerimaan';
         $this->titlePage = 'Daftar Penerimaan';
         $this->primaryKey = 'trId';
@@ -180,10 +182,44 @@ class PenerimaanController extends BaseController
         return $data;
     }
 
-    protected function beforeUpdate(array $data, $record): array
+    public function afterSave($data): void
+    {
+        // Simpan ke tabel laporan perfaktual
+        $this->modelLaporan::create([
+            'rpHeadId' => $data['trId'],
+            'rpTanggal' => $data['trTanggal'],
+            'rpTerimaNominal' => $data['trTerimaNominal'],
+            'rpJenisTrans' => 1, // 1 = Penerimaan
+            'rpKeterangan' => $data['trKeterangan'],
+            'rpUserId' => $data['trTerimaUserId'],
+            'rpCreatedBy' => $data['trCreatedBy'],
+            'rpUpdatedBy' => $data['trUpdatedBy'],
+        ]);
+    }
+
+    protected function beforeUpdate(array $data, $id): array
     {
         $data['trUpdatedBy'] = auth()->user()->name;
+        // Update tabel laporan perfaktual
+        $laporanRecord = $this->modelLaporan::where('rpJenisTrans', 1)->where('rpHeadId', $id)->first();
+        if ($laporanRecord) {
+            $laporanRecord->update([
+                'rpTanggal' => $data['trTanggal'],
+                'rpTerimaNominal' => $data['trTerimaNominal'],
+                'rpKeterangan' => $data['trKeterangan'],
+                'rpUpdatedBy' => $data['trUpdatedBy'],
+            ]);
+        }
 
         return $data;
+    }
+
+    public function beforeDelete($id)
+    {
+        // Hapus dari tabel laporan perfaktual
+        $laporanRecord = $this->modelLaporan::where('rpJenisTrans', 1)->where('rpHeadId', $id)->first();
+        if ($laporanRecord) {
+            $laporanRecord->delete();
+        }
     }
 }
