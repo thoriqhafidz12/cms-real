@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\Keuangan\Kas\CicilanController;
 use App\Http\Controllers\Keuangan\Kas\PenerimaanController;
 use App\Http\Controllers\Keuangan\Kas\PengeluaranController;
 use App\Http\Controllers\Keuangan\Master\MasterJenisPenerimaanController;
@@ -48,6 +49,14 @@ Route::middleware('auth')->group(function () {
     // MENU KAS
     Route::resource('penerimaan', PenerimaanController::class);
     Route::resource('pengeluaran', PengeluaranController::class);
+
+    // API cicilan
+    Route::get('api/cicilan/{id}/detail', [CicilanController::class, 'getDetail'])->name('api.cicilan.detail');
+    Route::get('api/cicilan/{id}', [CicilanController::class, 'getCicilan'])->name('api.cicilan.get');
+    Route::get('api/cicilan/delete/{id}', [CicilanController::class, 'destroyBayar'])->name('cicilan.destroyBayar');
+    Route::post('cicilan/bayar', [CicilanController::class, 'bayar'])->name('cicilan.bayar');
+
+    Route::resource('cicilan', CicilanController::class);
 
     // MENU LAPORAN
     Route::get('lap-arus-kas', [ArusKasController::class, 'index'])->name('lap-arus-kas.index');
