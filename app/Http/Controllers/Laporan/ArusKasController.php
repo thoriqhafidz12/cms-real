@@ -84,11 +84,13 @@ class ArusKasController extends BaseController
     {
         $tglAwal = $request->get('rpTglAwal', date('Y-m-01'));
         $tglAkhir = $request->get('rpTglAkhir', date('Y-m-t'));
+        $userId = $request->user()->id;
 
         $query = DB::table('rpt_perfaktual')
             ->select('rpTanggal as tanggal', 'rpKeterangan as keterangan', 'rpTerimaNominal as nTerima', 'rpKeluarNominal as nKeluar')
             ->where('rpTanggal', '>=', $tglAwal)
             ->where('rpTanggal', '<=', $tglAkhir)
+            ->where('rpUserId', $userId)
             ->orderBy('rpTanggal')
             ->get();
 
