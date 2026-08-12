@@ -7,6 +7,7 @@ use App\Http\Controllers\Keuangan\Kas\PenerimaanController;
 use App\Http\Controllers\Keuangan\Kas\PengeluaranController;
 use App\Http\Controllers\Keuangan\Master\MasterJenisPenerimaanController;
 use App\Http\Controllers\Keuangan\Master\MasterJenisPengeluaranController;
+use App\Http\Controllers\GantiPassController;
 use App\Http\Controllers\Laporan\ArusKasController;
 use App\Http\Controllers\MenuController;
 use App\Http\Controllers\RoleController;
@@ -31,6 +32,10 @@ Route::middleware('auth')->group(function () {
     // Custom role menu routes (harus diatas resource agar tidak ditangkap {role} wildcard)
     Route::get('roles/{role}/menu', [RoleController::class, 'menu'])->name('roles.menu');
     Route::put('roles/{role}/menu', [RoleController::class, 'updateMenu'])->name('roles.updateMenu');
+
+    // Route::resource('ganti-password', GantiPassController::class);
+    Route::get('ganti-password', [GantiPassController::class, 'index'])->name('ganti-password.index');
+    Route::put('ganti-password', [GantiPassController::class, 'update'])->name('ganti-password.update');
 
     Route::resource('roles', RoleController::class);
     Route::resource('users', UserController::class);

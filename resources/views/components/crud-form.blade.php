@@ -48,8 +48,11 @@
                         @endif
                     </label>
                     <input type="{{ $field['type'] }}" name="{{ $field['name'] }}" id="{{ $field['name'] }}"
-                        class="form-control @error($field['name']) is-invalid @enderror" value="{{ $oldVal }}"
-                        placeholder="{{ $field['placeholder'] }}" {{ !empty($field['required']) ? 'required' : '' }}>
+                        class="form-control @error($field['name']) is-invalid @enderror" value="{{ $field['type'] != 'password' ? $oldVal : '' }}"
+                        placeholder="{{ $field['placeholder'] ?? '' }}"
+                        {{ !empty($field['required']) ? 'required' : '' }}
+                        {{ !empty($field['readonly']) ? 'readonly' : '' }}
+                        {{ !empty($field['disabled']) ? 'disabled' : '' }}>
                     @error($field['name'])
                         <span class="invalid-feedback">{{ $message }}</span>
                     @enderror
