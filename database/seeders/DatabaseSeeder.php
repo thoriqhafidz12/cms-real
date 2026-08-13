@@ -121,6 +121,20 @@ class DatabaseSeeder extends Seeder
             'mUpdatedAt' => now(),
         ]);
 
+        Menu::create([
+            'mId'        => 6,
+            'mNama'      => 'Ganti Password',
+            'mRoute'     => 'ganti-password',
+            'mParentId'  => 2,      // → masuk ke collapse "Management"
+            'mIcon'      => '',
+            'mOrder'     => 4   ,
+            'mIsActive'  => 1,
+            'mCreatedBy' => 'Seeder',
+            'mUpdatedBy' => 'Seeder',
+            'mCreatedAt' => now(),
+            'mUpdatedAt' => now(),
+        ]);
+
         // ── Role Menu Access ────────────────────────────────────────────
         // Admin role (rId=1) mendapat akses ke semua menu (mId 1-5)
         //───────────────────────────────────────────────────────────────────
@@ -130,6 +144,7 @@ class DatabaseSeeder extends Seeder
             ['rmRoleId' => 1, 'rmMenuId' => 3, 'rmCreatedAt' => now(), 'rmUpdatedAt' => now()],
             ['rmRoleId' => 1, 'rmMenuId' => 4, 'rmCreatedAt' => now(), 'rmUpdatedAt' => now()],
             ['rmRoleId' => 1, 'rmMenuId' => 5, 'rmCreatedAt' => now(), 'rmUpdatedAt' => now()],
+            ['rmRoleId' => 1, 'rmMenuId' => 6, 'rmCreatedAt' => now(), 'rmUpdatedAt' => now()],
         ]);
     }
 }

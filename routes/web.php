@@ -23,7 +23,7 @@ Route::middleware('guest')->group(function () {
 });
 
 // Authenticated routes (only accessible when logged in)
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth', 'checkRole'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
     Route::post('/logout', [LoginController::class, 'logout'])->name('logout');

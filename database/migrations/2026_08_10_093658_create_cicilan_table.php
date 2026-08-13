@@ -16,6 +16,7 @@ return new class extends Migration
             $table->string('trcNoTrans', 100)->unique();
             $table->integer('trcUserId');
             $table->date('trcTanggal');
+            $table->date('trcJatuhTempo');
             $table->decimal('trcNominalPokok', 20, 2);
             $table->decimal('trcPokokBayar', 20, 2);
             $table->integer('trcTenor')->default(0);
