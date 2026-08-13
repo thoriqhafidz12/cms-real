@@ -206,4 +206,299 @@ transition: all 0.5s cubic-bezier(0.75, 0.2, 0.26, 0.7);
 }
 
 /* ── END PAGINATION ───────────────────────────────── */
+/* ── SELECT2 CUSTOM STYLING ────────────────────────── */
+
+/* Container — rounded + shadow halus */
+.select2-container--bootstrap4 .select2-selection {
+    border-radius: 0.35rem !important;
+    border: 1px solid #d1d3e2 !important;
+    min-height: calc(1.5em + 0.75rem + 2px) !important;
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+    background: #fff !important;
+}
+
+.select2-container--bootstrap4.select2-container--focus .select2-selection {
+    border-color: #121358 !important;
+    box-shadow: 0 0 0 0.2rem rgba(18, 19, 88, 0.15) !important;
+}
+
+/* Placeholder */
+.select2-container--bootstrap4 .select2-selection__placeholder {
+    color: #a0a5b5 !important;
+    font-style: italic;
+}
+
+/* Selected item — di dalam kolom (contained) */
+.select2-container--bootstrap4 .select2-selection--single {
+    height: auto !important;
+    display: flex !important;
+    align-items: center !important;
+}
+
+.select2-container--bootstrap4 .select2-selection--single .select2-selection__rendered {
+    flex: 1 1 auto;
+    padding: 0.375rem 0.25rem 0.375rem 0.75rem !important;
+    color: #121358 !important;
+    font-weight: 600;
+    font-size: 0.875rem;
+    line-height: 1.6;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 100%;
+}
+
+/* Teks yang dipilih (dari templateSelection) */
+.select2-selection-text {
+    display: inline !important;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.select2-selection-text .fa-check-circle {
+    font-size: 0.8rem;
+    margin-right: 2px;
+}
+
+/* Arrow — posisi kanan, sejajar */
+.select2-container--bootstrap4 .select2-selection--single .select2-selection__arrow {
+    position: static !important;
+    flex: 0 0 auto;
+    height: auto !important;
+    padding: 0.375rem 0.5rem;
+}
+
+.select2-container--bootstrap4 .select2-selection--single .select2-selection__arrow b {
+    position: static !important;
+}
+
+/* Clear button (x merah) — posisi kanan, sejajar dalam 1 baris */
+.select2-container--bootstrap4 .select2-selection--single .select2-selection__clear {
+    position: static !important;
+    flex: 0 0 auto;
+    float: none !important;
+    order: 1;
+    padding: 0 0.2rem;
+    font-size: 1.1rem;
+    line-height: 1;
+    color: #e74a3b !important;
+}
+
+.select2-container--bootstrap4 .select2-selection--single .select2-selection__clear:hover {
+    color: #be2617 !important;
+}
+
+/* Arrow */
+.select2-container--bootstrap4 .select2-selection__arrow b {
+    border-color: #6e707e transparent transparent transparent !important;
+}
+
+/* ── DROPDOWN ──────────────────────────────────────── */
+.select2-dropdown-custom {
+    border: 1px solid #d1d3e2 !important;
+    border-radius: 0.5rem !important;
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.12), 0 2px 6px rgba(0, 0, 0, 0.06) !important;
+    overflow: hidden;
+    margin-top: 4px;
+    animation: select2FadeIn 0.18s ease-out;
+}
+
+@keyframes select2FadeIn {
+    from { opacity: 0; transform: translateY(-5px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Search input di dalam dropdown */
+.select2-dropdown-custom .select2-search__field {
+    border: 1px solid #e3e6f0 !important;
+    border-radius: 0.35rem !important;
+    padding: 0.5rem 0.75rem !important;
+    font-size: 0.875rem !important;
+    outline: none !important;
+    transition: border-color 0.15s;
+    background: #fafbfd !important;
+}
+
+.select2-dropdown-custom .select2-search__field:focus {
+    border-color: #121358 !important;
+    box-shadow: 0 0 0 0.15rem rgba(18, 19, 88, 0.1) !important;
+    background: #fff !important;
+}
+
+/* ── RESULTS / OPTIONS ─────────────────────────────── */
+.select2-dropdown-custom .select2-results__option {
+    padding: 0.6rem 0.9rem !important;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    border-bottom: 1px solid #f4f4f8;
+}
+
+.select2-dropdown-custom .select2-results__option:last-child {
+    border-bottom: none;
+}
+
+/* Hover — text putih + gradient background + centang kanan */
+.select2-dropdown-custom .select2-results__option--highlighted {
+    background: linear-gradient(135deg, #121358 0%, #232F72 100%) !important;
+    color: #fff !important;
+    padding-left: 0.9rem !important;
+    padding-right: 2rem !important;
+    position: relative !important;
+}
+
+/* Centang di pojok kanan saat hover */
+.select2-dropdown-custom .select2-results__option--highlighted::after {
+    content: '✓';
+    position: absolute;
+    right: 0.85rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #fff;
+    font-size: 0.9rem;
+    font-weight: 700;
+    opacity: 0.9;
+}
+
+/* Pastikan semua child element ikut putih saat hover */
+.select2-dropdown-custom .select2-results__option--highlighted *,
+.select2-dropdown-custom .select2-results__option--highlighted span,
+.select2-dropdown-custom .select2-results__option--highlighted i,
+.select2-dropdown-custom .select2-results__option--highlighted .fa-tag,
+.select2-dropdown-custom .select2-results__option--highlighted .text-muted {
+    color: #fff !important;
+    opacity: 1 !important;
+}
+
+.select2-dropdown-custom .select2-results__option--highlighted .fa-tag {
+    color: rgba(255, 255, 255, 0.75) !important;
+}
+
+/* Selected option (yg sudah dipilih sebelumnya) — centang hijau di kiri */
+.select2-dropdown-custom .select2-results__option[aria-selected="true"] {
+    background-color: #eaecf4 !important;
+    color: #121358 !important;
+    font-weight: 600;
+    padding-right: 1.5rem !important;
+}
+
+.select2-dropdown-custom .select2-results__option[aria-selected="true"]::before {
+    content: '✓';
+    color: #1cc88a;
+    font-weight: 700;
+    margin-right: 0.4rem;
+}
+
+/* Jika selected DAN sedang di-hover, centang kanan tetap putih */
+.select2-dropdown-custom .select2-results__option[aria-selected="true"].select2-results__option--highlighted::after {
+    color: #fff;
+}
+
+/* Loading state */
+.select2-result-loading {
+    padding: 0.6rem 0.9rem;
+    color: #858796;
+    font-style: italic;
+    font-size: 0.85rem;
+}
+
+/* Result item layout */
+.select2-result-item {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.select2-result-item .fa-tag {
+    font-size: 0.7rem;
+    opacity: 0.5;
+    flex-shrink: 0;
+}
+
+/* No results message */
+.select2-dropdown-custom .select2-results__message {
+    padding: 1.25rem !important;
+    color: #858796 !important;
+    text-align: center;
+    font-size: 0.875rem;
+}
+
+/* ── END SELECT2 ───────────────────────────────────── */
+/* LOADING CSS END */
+
+/* Loading */
+.select2-result-loading {
+    padding: 0.5rem 0.85rem;
+    color: #858796;
+    font-style: italic;
+}
+
+/* Result item */
+.select2-result-item {
+    display: flex;
+    align-items: center;
+}
+
+.select2-result-item .fa-tag {
+    font-size: 0.75rem;
+    opacity: 0.6;
+}
+
+/* No results */
+.select2-dropdown-custom .select2-results__message {
+    padding: 1rem !important;
+    color: #858796 !important;
+    text-align: center;
+}
+
+/* ── END SELECT2 ───────────────────────────────────── */
+/* ── SWEETALERT2 CUSTOM ────────────────────────────── */
+
+.swal-popup-custom {
+    border-radius: 0.75rem !important;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.18) !important;
+    padding: 1.5rem 1.5rem 1rem !important;
+}
+
+.swal-title-custom {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: #121358;
+}
+
+/* Toast */
+.swal-toast-custom {
+    border-radius: 0.5rem !important;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12) !important;
+    padding: 0.75rem 1rem !important;
+    font-size: 0.875rem;
+}
+
+/* Tombol dalam SweetAlert */
+.swal-popup-custom .swal2-confirm {
+    border-radius: 0.35rem !important;
+    font-weight: 600;
+    padding: 0.4rem 1.25rem !important;
+    font-size: 0.85rem;
+}
+
+.swal-popup-custom .swal2-cancel {
+    border-radius: 0.35rem !important;
+    font-weight: 500;
+    padding: 0.4rem 1.25rem !important;
+    font-size: 0.85rem;
+}
+
+/* Animasi toast dari kanan */
+.swal2-toast {
+    animation: swalSlideIn 0.3s ease-out !important;
+}
+
+@keyframes swalSlideIn {
+    from { opacity: 0; transform: translateX(60px); }
+    to   { opacity: 1; transform: translateX(0); }
+}
+
+/* ── END SWEETALERT2 ───────────────────────────────── */
 /* LOADING CSS END */

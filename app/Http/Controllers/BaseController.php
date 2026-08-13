@@ -71,7 +71,11 @@ abstract class BaseController extends Controller
             $this->buildValidationRules()
         );
 
-        $modelClass::create($this->beforeSave($validated, null));
+        $res = $modelClass::create($this->beforeSave($validated, null));
+
+        if (method_exists($this, 'afterSave')) {
+            $this->afterSave($res->toArray());
+        }
 
         return redirect()
             ->route($this->route . '.index')
@@ -90,7 +94,7 @@ abstract class BaseController extends Controller
             $this->buildValidationRules($id)
         );
 
-        $record->update($this->beforeUpdate($validated, $record));
+        $record->update($this->beforeUpdate($validated, $id));
 
         return redirect()
             ->route($this->route . '.index')
@@ -104,6 +108,11 @@ abstract class BaseController extends Controller
     {
         $modelClass = $this->model;
         $record = $modelClass::where($this->primaryKey, $id)->firstOrFail();
+        
+        if (method_exists($this, 'beforeDelete')) {
+            $this->beforeDelete($id);
+        }
+
         $record->delete();
 
         return redirect()
@@ -139,9 +148,13 @@ abstract class BaseController extends Controller
                     $fieldRules[] = 'min:4';
                     break;
                 case 'select':
+                case 'autocomplete':
                     $fieldRules[] = 'integer';
-                    $fieldRules[] = 'exists:' . ($field['exists'] ?? '');
+                    if (!empty($field['exists'])) {
+                        $fieldRules[] = 'exists:' . $field['exists'];
+                    }
                     break;
+                case 'angka':
                 case 'number':
                     $fieldRules[] = 'numeric';
                     break;
@@ -180,5 +193,149 @@ abstract class BaseController extends Controller
     protected function beforeUpdate(array $data, $record): array
     {
         return $data;
+    }
+
+    public function formatDate($date): string
+    {
+        $tanggal = '';
+        if (empty($date)) {
+            $tanggal = '';
+        } else {
+            if (substr($date, 2, 1) == '/') {
+                $a = explode('/', $date);
+            } else {
+                $a = explode('-', $date);
+                $d = $a[2];
+                $m = $a[1];
+                $y = $a[0];
+                $a[0] = $m + 0;
+                $a[1] = $d;
+                $a[2] = $y;
+            }
+            $tanggal = $a[2] . '-' . $a[1] . '-' . $a[0];
+        }
+        return $tanggal;
+    }
+
+    function dateID($tgl)
+    {
+
+        if (substr($tgl, 2, 1) == '/') {
+            $a = explode('/', $tgl);
+        } else {
+            $a = explode('-', $tgl);
+            $d = $a[2];
+            $m = $a[1];
+            $y = $a[0];
+            $a[0] = $m + 0;
+            $a[1] = $d;
+            $a[2] = $y;
+        }
+
+        $nmbulan = '';
+
+        switch ($a[0]) {
+            case 1:
+                $nmbulan = 'Januari';
+                break;
+            case 2:
+                $nmbulan = 'Februari';
+                break;
+            case 3:
+                $nmbulan = 'Maret';
+                break;
+            case 4:
+                $nmbulan = 'April';
+                break;
+            case 5:
+                $nmbulan = 'Mei';
+                break;
+            case 6:
+                $nmbulan = 'Juni';
+                break;
+            case 7:
+                $nmbulan = 'Juli';
+                break;
+            case 8:
+                $nmbulan = 'Agustus';
+                break;
+            case 9:
+                $nmbulan = 'September';
+                break;
+            case 10:
+                $nmbulan = 'Oktober';
+                break;
+            case 11:
+                $nmbulan = 'November';
+                break;
+            case 12:
+                $nmbulan = 'Desember';
+                break;
+        }
+
+        return $a[1] . ' ' . $nmbulan . ' ' . $a['2'];
+    }
+
+    function dateIDkosong($tgl)
+    {
+        if ($tgl != 0) {
+            if (substr($tgl, 2, 1) == '/') {
+                $a = explode('/', $tgl);
+            } else {
+                $a = explode('-', $tgl);
+                $d = $a[2];
+                $m = $a[1];
+                $y = $a[0];
+                $a[0] = $m + 0;
+                $a[1] = $d;
+                $a[2] = $y;
+            }
+
+            $nmbulan = '';
+
+            switch ($a[0]) {
+                case 1:
+                    $nmbulan = 'Januari';
+                    break;
+                case 2:
+                    $nmbulan = 'Februari';
+                    break;
+                case 3:
+                    $nmbulan = 'Maret';
+                    break;
+                case 4:
+                    $nmbulan = 'April';
+                    break;
+                case 5:
+                    $nmbulan = 'Mei';
+                    break;
+                case 6:
+                    $nmbulan = 'Juni';
+                    break;
+                case 7:
+                    $nmbulan = 'Juli';
+                    break;
+                case 8:
+                    $nmbulan = 'Agustus';
+                    break;
+                case 9:
+                    $nmbulan = 'September';
+                    break;
+                case 10:
+                    $nmbulan = 'Oktober';
+                    break;
+                case 11:
+                    $nmbulan = 'November';
+                    break;
+                case 12:
+                    $nmbulan = 'Desember';
+                    break;
+            }
+
+            $res = $a[1] . ' ' . $nmbulan . ' ' . $a['2'];
+        } else {
+            $res = '';
+        }
+        return $res;
     }
 }

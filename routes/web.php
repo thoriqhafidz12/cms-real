@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\GantiPassController;
 use App\Http\Controllers\MenuController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserController;
@@ -18,7 +19,9 @@ Route::middleware('guest')->group(function () {
 });
 
 // Authenticated routes (only accessible when logged in)
-Route::middleware('auth')->group(function () {
+// checkRole: cek akses menu role user via role_menu — dashboard ikut dicek
+// karena terdaftar di tabel menu (mRoute = 'dashboard').
+Route::middleware(['auth', 'checkRole'])->group(function () {
     Route::get('/dashboard', function () {
         return view('dashboard', [
             'totalUsers' => User::count(),
@@ -29,14 +32,18 @@ Route::middleware('auth')->group(function () {
 
     Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 
+    // MENU MANAGEMENT
     // Custom role menu routes (harus diatas resource agar tidak ditangkap {role} wildcard)
     Route::get('roles/{role}/menu', [RoleController::class, 'menu'])->name('roles.menu');
     Route::put('roles/{role}/menu', [RoleController::class, 'updateMenu'])->name('roles.updateMenu');
 
+    // Route::resource('ganti-password', GantiPassController::class);
+    Route::get('ganti-password', [GantiPassController::class, 'index'])->name('ganti-password.index');
+    Route::put('ganti-password', [GantiPassController::class, 'update'])->name('ganti-password.update');
+
     Route::resource('roles', RoleController::class);
     Route::resource('users', UserController::class);
     Route::resource('menus', MenuController::class);
-    // Route::resource('setting', MenuController::class);
 });
 
 // Redirect root to login or dashboard

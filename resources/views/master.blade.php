@@ -25,8 +25,8 @@
                     <div class="table-responsive">
                         <table class="table table-bordered" width="100%" cellspacing="0">
                             <thead>
-                                <tr>
-                                    <th>No</th>
+                                <tr class="text-center">
+                                    {{-- <th>No</th> --}}
                                     @foreach ($grid as $column)
                                         <th>{{ $column['label'] }}</th>
                                     @endforeach
@@ -37,28 +37,53 @@
                                 @forelse ($items as $item)
                                     <tr
                                         class="{{ isset($editData) && $editData->{$primaryKey} == $item->{$primaryKey} ? 'table-warning' : '' }}">
-                                        <td>{{ $loop->iteration + $items->firstItem() - 1 }}</td>
+                                        {{-- <td class="text-center">{{ $loop->iteration + $items->firstItem() - 1 }}</td> --}}
                                         @foreach ($grid as $column)
-                                            <td>
-                                                @if ($column['type'] === 'text')
-                                                    {{ $item->{$column['field']} ?? '-' }}
-                                                @elseif ($column['type'] === 'icon')
-                                                    <i class="fas {{ $item->{$column['field']} }}"></i>
-                                                @elseif ($column['type'] === 'badge')
-                                                    <span class="badge badge-primary">{{ $item->{$column['field']} }}</span>
-                                                @else
-                                                    {{ $item->{$column['field']} ?? '-' }}
-                                                @endif
+                                            @if ($column['type'] === 'text')
+                                                <td class="{{ $column['class'] ?? 'text-center' }}">
+                                                    {{ $item->{$column['field']} ?? '-' }}</td>
+                                            @elseif ($column['type'] === 'icon')
+                                                <td class="{{ $column['class'] ?? 'text-center' }}"><i
+                                                        class="fas {{ $item->{$column['field']} }}"></i></td>
+                                            @elseif ($column['type'] === 'badge')
+                                                <td class="{{ $column['class'] ?? 'text-center' }}"><span
+                                                        class="badge badge-primary">{{ $item->{$column['field']} }}</span>
+                                                </td>
+                                            @elseif ($column['type'] === 'date')
+                                                <td class="{{ $column['class'] ?? 'text-center' }}">
+                                                    {{ $item->{$column['field']} ? \Carbon\Carbon::parse($item->{$column['field']})->format('d/m/Y') : '-' }}
+                                                </td>
+                                            @elseif ($column['type'] === 'datetime')
+                                                <td class="{{ $column['class'] ?? 'text-center' }}">
+                                                    {{ $item->{$column['field']} ? \Carbon\Carbon::parse($item->{$column['field']})->format('d/m/Y H:i:s') : '-' }}
+                                                </td>
+                                            @elseif ($column['type'] === 'angka')
+                                                <td class="{{ $column['class'] ?? 'text-center' }}">
+                                                    @php
+                                                        $value = $item->{$column['field']} ?? 0;
+                                                        echo number_format($value, 2, ',', '.');
+                                                    @endphp
+                                                </td>
+                                            @elseif ($column['type'] === 'rupiah')
+                                                <td class="{{ $column['class'] ?? 'text-center' }}">
+                                                    @php
+                                                        $value = $item->{$column['field']} ?? 0;
+                                                        echo 'Rp ' . number_format($value, 2, ',', '.');
+                                                    @endphp
+                                                </td>
+                                            @else
+                                                <td class="{{ $column['class'] ?? 'text-center' }}">
+                                                    {{ $item->{$column['field']} ?? '-' }}</td>
+                                            @endif
                                             </td>
                                         @endforeach
-                                        <td>
+                                        <td class="text-center">
                                             <a href="{{ route($route . '.index', ['edit' => $item->{$primaryKey}]) }}"
                                                 class="btn btn-warning btn-sm">
                                                 <i class="fas fa-edit"></i>
                                             </a>
                                             <form action="{{ route($route . '.destroy', $item->{$primaryKey}) }}"
-                                                method="POST" class="d-inline"
-                                                onsubmit="return confirm('Hapus data ini?')">
+                                                method="POST" class="d-inline form-delete">
                                                 @csrf
                                                 @method('DELETE')
                                                 <button type="submit" class="btn btn-danger btn-sm">
