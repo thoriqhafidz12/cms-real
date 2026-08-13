@@ -10,7 +10,7 @@
         </div>
     </div>
     <div id="Moduleloader-page" class="jssorl-009-spin">
-        <img src="assets/img/spinner.svg">
+        <img src="{{ url('/') }}/assets/img/spinner.svg">
     </div>
     <div class="bottom-slide">
         <div id="wrapper">
@@ -29,9 +29,12 @@
                 <hr class="sidebar-divider my-0">
 
                 @php
-                    // Ambil ID menu yang diizinkan untuk role user saat ini
+                    // Ambil ID menu yang diizinkan untuk role user saat ini.
+                    // Bila CheckRole middleware sudah menghitungnya, pakai hasilnya (hemat 1 query).
                     $user = Auth::user();
-                    $allowedMenuIds = $user->roleRelation?->menus()->pluck('menu.mId')->toArray() ?? [];
+                    $allowedMenuIds = request()->attributes->get('assignedMenuIds')
+                        ?? $user->roleRelation?->menus()->pluck('menu.mId')->toArray()
+                        ?? [];
 
                     $allMenus = App\Models\Menu::where('mIsActive', 1)
                         ->when(!empty($allowedMenuIds), function ($query) use ($allowedMenuIds) {

@@ -7,6 +7,9 @@
 
  <!-- Custom scripts for all pages-->
  <script src="{{ url('/') }}/assets/js/sb-admin-2.min.js"></script>
+
+ <!-- SweetAlert2 — dipakai custom.js untuk konfirmasi hapus -->
+ <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
  <script src="{{ url('/') }}/assets/js/custom.js"></script>
 
  <!-- Page level plugins -->

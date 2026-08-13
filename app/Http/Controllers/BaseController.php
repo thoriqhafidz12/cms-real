@@ -27,6 +27,9 @@ abstract class BaseController extends Controller
     /** @var array Field definitions untuk form */
     protected array $form = [];
 
+    /** @var array Column definitions untuk tabel listing */
+    protected array $grid = [];
+
     /** @var string|array Column name(s) untuk search */
     protected string|array $searchColumn = '';
 

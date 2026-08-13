@@ -90,8 +90,9 @@ class UserController extends BaseController
         $search = $request->get('search');
         $editId = $request->get('edit');
 
+        // Pilih kolom eksplisit — jangan ikutkan password hash ke hasil listing
         $query = User::leftJoin('role', 'users.role', '=', 'role.rId')
-            ->select('users.*', 'role.rNama');
+            ->select('users.id', 'users.name', 'users.email', 'users.role', 'users.created_at', 'users.updated_at', 'role.rNama');
 
         if ($search && $this->searchColumn) {
             $columns = (array) $this->searchColumn;

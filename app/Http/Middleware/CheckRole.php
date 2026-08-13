@@ -53,6 +53,9 @@ class CheckRole
         // ID menu yang di-assign ke role user (sama seperti filter sidebar)
         $assignedMenuIds = $user->roleRelation?->menus()->pluck('menu.mId') ?? collect();
 
+        // Simpan di request attribute supaya sidebar tidak query ulang (hemat 1 query)
+        $request->attributes->set('assignedMenuIds', $assignedMenuIds->toArray());
+
         // Role tanpa assignment → semua menu dianggap boleh (konsisten dengan sidebar)
         if ($assignedMenuIds->isEmpty()) {
             return $next($request);

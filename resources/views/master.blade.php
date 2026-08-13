@@ -94,7 +94,7 @@
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="{{ count($grid) + 2 }}" class="text-center text-muted">
+                                        <td colspan="{{ count($grid) + 1 }}" class="text-center text-muted">
                                             Tidak ada data.
                                         </td>
                                     </tr>

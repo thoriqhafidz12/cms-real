@@ -71,7 +71,7 @@
                     </label>
                     <input type="text" id="{{ $field['name'] }}_display"
                         class="form-control @error($field['name']) is-invalid @enderror" value="{{ $displayVal }}"
-                        placeholder="{{ $field['placeholder'] }}" {{ !empty($field['required']) ? 'required' : '' }}
+                        placeholder="{{ $field['placeholder'] ?? '' }}" {{ !empty($field['required']) ? 'required' : '' }}
                         oninput="autoNumericDot(this, '{{ $field['name'] }}')"
                         autocomplete="off">
                     <input type="hidden" name="{{ $field['name'] }}" id="{{ $field['name'] }}" value="{{ $rawVal }}">
@@ -89,7 +89,7 @@
                     </label>
                     <input type="{{ $field['type'] }}" name="{{ $field['name'] }}" id="{{ $field['name'] }}"
                         class="form-control @error($field['name']) is-invalid @enderror" value="{{ $oldVal }}"
-                        placeholder="{{ $field['placeholder'] }}" {{ !empty($field['required']) ? 'required' : '' }}>
+                        placeholder="{{ $field['placeholder'] ?? '' }}" {{ !empty($field['required']) ? 'required' : '' }}>
                     @error($field['name'])
                         <span class="invalid-feedback">{{ $message }}</span>
                     @enderror
@@ -192,7 +192,7 @@
                     </label>
                     <textarea name="{{ $field['name'] }}" id="{{ $field['name'] }}"
                         class="form-control @error($field['name']) is-invalid @enderror"
-                        placeholder="{{ $field['placeholder'] }}" {{ !empty($field['required']) ? 'required' : '' }}>{{ $oldVal }}</textarea>
+                        placeholder="{{ $field['placeholder'] ?? '' }}" {{ !empty($field['required']) ? 'required' : '' }}>{{ $oldVal }}</textarea>
                     @error($field['name'])
                         <span class="invalid-feedback">{{ $message }}</span>
                     @enderror

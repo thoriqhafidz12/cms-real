@@ -19,6 +19,9 @@
     <!-- Custom styles for this template-->
     <link href="{{ url('/') }}/assets/css/sb-admin-2.min.css" rel="stylesheet">
     <link href="{{ url('/') }}/assets/css/custom.css" rel="stylesheet">
+
+    <!-- SweetAlert2 — dipakai custom.js untuk konfirmasi hapus -->
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
     <!-- Custom styles for this page -->
     <link href="{{ url('/') }}/assets/vendor/datatables/dataTables.bootstrap4.min.css" rel="stylesheet">
 </head>

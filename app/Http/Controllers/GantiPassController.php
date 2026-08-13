@@ -9,6 +9,15 @@ use Illuminate\View\View;
 
 class GantiPassController extends Controller
 {
+    /** @var string Route prefix, e.g. 'ganti-password' */
+    protected string $route;
+
+    /** @var string Page title */
+    protected string $titlePage;
+
+    /** @var array Field definitions untuk form */
+    protected array $form;
+
     public function __construct()
     {
         $this->route = 'ganti-password';
