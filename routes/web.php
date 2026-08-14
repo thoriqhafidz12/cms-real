@@ -22,6 +22,16 @@ Route::middleware('guest')->group(function () {
     Route::post('/login', [LoginController::class, 'login']);
 });
 
+Route::get('/debug-url', function () {
+    return [
+        'url' => request()->url(),
+        'full_url' => request()->fullUrl(),
+        'scheme' => request()->getScheme(),
+        'secure' => request()->isSecure(),
+        'host' => request()->getHost(),
+    ];
+});
+
 // Authenticated routes (only accessible when logged in)
 Route::middleware(['auth', 'checkRole'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
