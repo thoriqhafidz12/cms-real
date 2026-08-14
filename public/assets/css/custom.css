@@ -502,3 +502,259 @@ transition: all 0.5s cubic-bezier(0.75, 0.2, 0.26, 0.7);
 
 /* ── END SWEETALERT2 ───────────────────────────────── */
 /* LOADING CSS END */
+
+/* ══════════════════════════════════════════════════════════
+   MOBILE OFF-CANVAS DRAWER  (< 768px)
+   .sidebar-toggled + .toggled ditambahkan oleh sb-admin-2.js;
+   di bawah ini class tersebut diartikan ulang sebagai drawer terbuka.
+   ══════════════════════════════════════════════════════════ */
+@media (max-width: 767.98px) {
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 14rem !important;          /* mengalahkan base .sidebar { width: 6.5rem } */
+    min-height: 100vh;
+    min-height: 100dvh;               /* aman URL bar iOS (fallback di atas) */
+    z-index: 1040;                    /* di bawah modal (1050), di atas backdrop (1039) */
+    transform: translateX(-100%);     /* off-canvas, tersembunyi */
+    transition: transform 0.3s ease;
+    overflow: visible !important;     /* netralkan base .sidebar.toggled{overflow:hidden!important} */
+    overflow-y: auto !important;      /* tapi drawer tetap bisa di-scroll */
+  }
+  body.sidebar-toggled .sidebar,
+  .sidebar.toggled {                  /* sb-admin-2.js menambah .toggled bersama class body */
+    transform: translateX(0);
+    width: 14rem !important;
+    overflow: visible !important;
+    overflow-y: auto !important;
+  }
+
+  /* ── Mode nav diperluas di dalam drawer ──────────────────
+     (meniru blok @media (min-width: 768px) di sb-admin-2.css,
+     karena di bawah 768px template merender icon rail dengan
+     submenu flyout absolut keluar dari drawer) */
+  .sidebar .nav-item .collapse {
+    position: relative;
+    left: 0;
+    top: 0;
+    z-index: 1;
+    -webkit-animation: none;
+    animation: none;
+  }
+  .sidebar .nav-item .collapse .collapse-inner {
+    border-radius: 0;
+    box-shadow: none;
+  }
+  .sidebar .nav-item .collapsing {
+    display: block;
+    transition: height 0.15s ease;
+  }
+  .sidebar .nav-item .collapse,
+  .sidebar .nav-item .collapsing {
+    margin: 0 1rem;
+  }
+  .sidebar .nav-item .nav-link {
+    display: block;
+    width: 100%;
+    text-align: left;
+    padding: 1rem;
+  }
+  .sidebar .nav-item .nav-link i {
+    font-size: 0.85rem;
+    margin-right: 0.25rem;
+  }
+  .sidebar .nav-item .nav-link span {
+    font-size: 0.85rem;
+    display: inline;
+  }
+  .sidebar .nav-item .nav-link[data-toggle="collapse"]::after {
+    width: 1rem;
+    text-align: center;
+    float: right;
+    vertical-align: 0;
+    border: 0;
+    font-weight: 900;
+    content: '\f107';
+    font-family: 'Font Awesome 5 Free';
+  }
+  .sidebar .nav-item .nav-link[data-toggle="collapse"].collapsed::after {
+    content: '\f105';
+  }
+  .sidebar .sidebar-brand .sidebar-brand-icon i {
+    font-size: 2rem;
+  }
+  .sidebar .sidebar-brand .sidebar-brand-text {
+    display: inline;
+  }
+  .sidebar .sidebar-heading {
+    text-align: left;
+  }
+
+  /* Scroll lock saat drawer terbuka — !important mengalahkan inline
+     overflow-y:auto yang dipasang custom.js saat window load */
+  body.sidebar-toggled {
+    overflow: hidden !important;
+  }
+
+  /* Backdrop */
+  .sidebar-backdrop {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 1039;
+    background: rgba(0, 0, 0, 0.5);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+  }
+  body.sidebar-toggled .sidebar-backdrop {
+    display: block;
+    opacity: 1;
+    visibility: visible;
+  }
+}
+
+/* ══════════════════════════════════════════════════════════
+   MOBILE CARD TABLES  (< 576px) — baris jadi kartu bertumpuk
+   Pemakaian: <table class="table table-bordered table-mobile-card">
+   Setiap <td> perlu data-label="<nama kolom>" (lihat views).
+   ══════════════════════════════════════════════════════════ */
+@media (max-width: 575.98px) {
+  .table-mobile-card {
+    display: block;
+    width: 100%;
+  }
+  .table-mobile-card thead {
+    display: none;
+  }
+  .table-mobile-card tbody {
+    display: block;
+    width: 100%;
+  }
+
+  /* Chrome kartu hanya di baris data — :not(.collapse) menjaga
+     mekanisme .collapse{display:none} / .collapse.show{display:block}
+     Bootstrap untuk baris detail cicilan */
+  .table-mobile-card tbody tr:not(.collapse) {
+    position: relative;
+    display: block;
+    width: 100%;
+    border: 1px solid #e3e6f0;
+    border-radius: 0.35rem;
+    margin-bottom: 0.75rem;
+    padding: 0.5rem 0;
+    background: #fff;
+    box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
+    font-size: 0.85rem;
+  }
+  /* Pertahankan highlight baris yang sedang diedit */
+  .table-mobile-card tbody tr.table-warning,
+  .table-mobile-card tbody tr.table-warning td {
+    background-color: #fff3cd !important;
+  }
+  /* Pertahankan warna abu-abu baris parent (roles/menu) */
+  .table-mobile-card tbody tr.table-secondary {
+    background-color: #eaecf4;
+  }
+
+  /* Nol-kan border .table-bordered pada tabel kartu */
+  .table-mobile-card.table-bordered,
+  .table-mobile-card.table-bordered th,
+  .table-mobile-card.table-bordered td {
+    border: 0;
+  }
+
+  /* Sel: label (::before dari data-label) kiri, nilai kanan */
+  .table-mobile-card tbody td {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 0.35rem 0.75rem;
+    border: 0;
+    text-align: right;
+  }
+  .table-mobile-card tbody td::before {
+    content: attr(data-label);
+    font-weight: 700;
+    color: #5a5c69;
+    text-align: left;
+    flex: 0 0 auto;
+  }
+  .table-mobile-card tbody td:not([data-label])::before {
+    display: none;
+  }
+
+  /* Baris empty-state ("Tidak ada data."): rata tengah, tanpa flex */
+  .table-mobile-card tbody td[colspan] {
+    display: block;
+    text-align: center;
+    padding: 0.75rem;
+  }
+
+  /* Baris detail-collapse cicilan: tanpa chrome kartu; inner table full width */
+  .table-mobile-card tbody tr.collapse,
+  .table-mobile-card tbody tr.collapse.collapsing {
+    border: 0;
+    border-radius: 0;
+    margin: 0;
+    padding: 0;
+    box-shadow: none;
+    background: transparent;
+  }
+  .table-mobile-card tbody tr.collapse td[colspan] {
+    display: block;
+    border: 0;
+    padding: 0;
+  }
+}
+
+/* ══════════════════════════════════════════════════════════
+   MOBILE POLISH  (< 576px)
+   ══════════════════════════════════════════════════════════ */
+@media (max-width: 575.98px) {
+  /* Chart: kecilkan tinggi inline yang fixed */
+  .chart-bar,
+  .chart-area {
+    height: 240px !important;
+  }
+  /* Gutter halaman lebih rapat */
+  #content-wrapper .container-fluid {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+  /* Pagination: wrap + center */
+  .pagination {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  /* Footer info "Menampilkan ..." + pagination — wrap rapi */
+  .card-body > .d-flex.justify-content-between {
+    flex-wrap: wrap;
+    row-gap: 0.5rem;
+  }
+  .card-body > .d-flex.justify-content-between > small {
+    width: 100%;
+    text-align: center;
+  }
+  .card-body > .d-flex.justify-content-between > div {
+    margin: 0 auto;
+  }
+  /* Judul halaman */
+  .h3 {
+    font-size: 1.35rem;
+  }
+  /* Kartu login (login pakai template-top, tanpa drawer) */
+  .o-hidden .p-5 {
+    padding: 1.5rem !important;
+  }
+  .o-hidden.shadow-lg.my-5 {
+    margin-top: 1rem !important;
+    margin-bottom: 1rem !important;
+  }
+}

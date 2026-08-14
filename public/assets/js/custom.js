@@ -175,3 +175,63 @@ document.addEventListener('DOMContentLoaded', function () {
         return new bootstrap.Tooltip(tooltipTriggerEl);
     });
 });
+
+// ──────────────────────────────────────────────────────────────
+// MOBILE OFF-CANVAS DRAWER (< 768px)
+// sb-admin-2.js otomatis menambah sidebar-toggled/toggled di bawah
+// 480px pada SETIAP event resize (show/hide URL bar). Handler kita
+// berjalan SETELAH-nya (custom.js di-load setelah sb-admin-2.min.js)
+// dan membersihkannya kecuali user memang membuka drawer.
+// ──────────────────────────────────────────────────────────────
+(function () {
+    var isMobile = function () { return window.innerWidth < 768; };
+
+    // 1) Menangkal handler resize sb-admin-2.js: hapus class auto-added.
+    //    (dipertahankan bila ada penanda drawer-user-open)
+    $(window).on('resize', function () {
+        if (isMobile() && !$('body').hasClass('drawer-user-open')) {
+            $('body').removeClass('sidebar-toggled');
+            $('.sidebar').removeClass('toggled');
+        }
+    });
+
+    // 2) Ganti handler tombol hamburger (elemen khusus mobile — d-md-none).
+    //    .off() melepas handler langsung sb-admin-2.js agar tidak toggle ganda.
+    $('#sidebarToggleTop').off('click');
+    $('#sidebarToggleTop').on('click', function (e) {
+        e.preventDefault();
+        var open = !$('body').hasClass('sidebar-toggled');
+        $('body').toggleClass('sidebar-toggled', open)
+            .toggleClass('drawer-user-open', open);
+        $('.sidebar').toggleClass('toggled', open);
+        if (open) {
+            $('.sidebar .collapse').collapse('hide');   // samakan perilaku SB
+        }
+    });
+
+    // 3) Klik backdrop → tutup drawer
+    $(document).on('click', '.sidebar-backdrop', function () {
+        $('body').removeClass('sidebar-toggled drawer-user-open');
+        $('.sidebar').removeClass('toggled');
+    });
+
+    // 4) Klik link menu sungguhan → tutup drawer; toggle submenu
+    //    (data-toggle="collapse") TIDAK boleh menutup drawer,
+    //    agar submenu tetap bisa di-expand di dalam drawer.
+    $(document).on('click',
+        '.sidebar .collapse-item, .sidebar a.nav-link:not([data-toggle="collapse"])',
+        function () {
+            if (isMobile() && $('body').hasClass('sidebar-toggled')) {
+                $('body').removeClass('sidebar-toggled drawer-user-open');
+                $('.sidebar').removeClass('toggled');
+            }
+        });
+
+    // 5) Kembali ke desktop: buang penanda (desktop memakai perilaku
+    //    toggle asli SB, termasuk #sidebarToggle bawah).
+    $(window).on('resize', function () {
+        if (!isMobile()) {
+            $('body').removeClass('drawer-user-open');
+        }
+    });
+})();

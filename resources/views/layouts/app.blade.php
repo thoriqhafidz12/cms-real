@@ -10,7 +10,7 @@
         </div>
     </div>
     <div id="Moduleloader-page" class="jssorl-009-spin">
-        <img src="{{ url('/') }}/assets/img/spinner.svg">
+        <img src="assets/img/spinner.svg">
     </div>
     <div class="bottom-slide">
         <div id="wrapper">
@@ -21,20 +21,17 @@
                 <a class="sidebar-brand d-flex align-items-center justify-content-center"
                     href="{{ route('dashboard') }}">
                     <div class="sidebar-brand-icon rotate-n-15">
-                        <i class="fas fa-laugh-wink"></i>
+                        <i class="fas fa-file-invoice-dollar"></i>
                     </div>
-                    <div class="sidebar-brand-text mx-3">CMS Admin</div>
+                    <div class="sidebar-brand-text mx-3">KEURIQ-TH</div>
                 </a>
 
                 <hr class="sidebar-divider my-0">
 
                 @php
-                    // Ambil ID menu yang diizinkan untuk role user saat ini.
-                    // Bila CheckRole middleware sudah menghitungnya, pakai hasilnya (hemat 1 query).
+                    // Ambil ID menu yang diizinkan untuk role user saat ini
                     $user = Auth::user();
-                    $allowedMenuIds = request()->attributes->get('assignedMenuIds')
-                        ?? $user->roleRelation?->menus()->pluck('menu.mId')->toArray()
-                        ?? [];
+                    $allowedMenuIds = $user->roleRelation?->menus()->pluck('menu.mId')->toArray() ?? [];
 
                     $allMenus = App\Models\Menu::where('mIsActive', 1)
                         ->when(!empty($allowedMenuIds), function ($query) use ($allowedMenuIds) {
@@ -141,6 +138,9 @@
 
             </ul>
 
+            {{-- Mobile drawer backdrop --}}
+            <div class="sidebar-backdrop" aria-hidden="true"></div>
+
             {{-- Content Wrapper --}}
             <div id="content-wrapper" class="d-flex flex-column">
 
@@ -213,7 +213,7 @@
                 <footer class="sticky-footer bg-white">
                     <div class="container my-auto">
                         <div class="copyright text-center my-auto">
-                            <span>Copyright &copy; CMS {{ date('Y') }}</span>
+                            <span>Copyright &copy; KEURIQ-TH {{ date('Y') }}</span>
                         </div>
                     </div>
                 </footer>
