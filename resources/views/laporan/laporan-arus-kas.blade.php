@@ -41,7 +41,7 @@
 
     {{-- Summary --}}
     <div id="summaryCard" class="row mb-3" style="display:none;">
-        <div class="col-md-3">
+        <div class="col-6 col-md-3">
             <div class="card border-left-secondary shadow h-100 py-1">
                 <div class="card-body py-2">
                     <div class="text-xs font-weight-bold text-secondary text-uppercase mb-1">Saldo Akhir</div>
@@ -49,7 +49,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
+        <div class="col-6 col-md-3">
             <div class="card border-left-success shadow h-100 py-1">
                 <div class="card-body py-2">
                     <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Total Penerimaan</div>
@@ -57,7 +57,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
+        <div class="col-6 col-md-3">
             <div class="card border-left-danger shadow h-100 py-1">
                 <div class="card-body py-2">
                     <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">Total Pengeluaran</div>
@@ -65,7 +65,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
+        <div class="col-6 col-md-3">
             <div class="card border-left-info shadow h-100 py-1">
                 <div class="card-body py-2">
                     <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Total Transaksi</div>
@@ -95,7 +95,7 @@
 
             {{-- Table --}}
             <div id="tableWrapper" class="table-responsive" style="display:none;">
-                <table class="table table-bordered table-hover table-sm" width="100%" cellspacing="0">
+                <table class="table table-bordered table-hover table-sm table-mobile-card" width="100%" cellspacing="0">
                     <thead class="bg-light">
                         <tr class="text-center">
                             <th class="text-center" width="5%">No</th>
@@ -159,25 +159,32 @@
             }
 
             /**
+             * Escape & dan " untuk atribut data-label
+             */
+            function escAttr(s) {
+                return String(s ?? '').replace(/&/g, '&amp;').replace(/"/g, '&quot;');
+            }
+
+            /**
              * Render satu baris tabel
              */
             function renderRow(item, index) {
                 let html = '<tr>';
-                html += '<td class="text-center">' + (index + 1) + '</td>';
+                html += '<td class="text-center" data-label="No">' + (index + 1) + '</td>';
                 gridColumns.forEach(function(col) {
                     const val = item[col.field] ?? '';
                     if (col.type === 'date') {
-                        html += '<td class="' + (col.class || 'text-center') + '">' +
+                        html += '<td class="' + (col.class || 'text-center') + '" data-label="' + escAttr(col.label) + '">' +
                             (val ? new Date(val).toLocaleDateString('id-ID', {
                                 day: '2-digit',
                                 month: 'long',
                                 year: 'numeric'
                             }) : '-') + '</td>';
                     } else if (col.type === 'angka') {
-                        html += '<td class="' + (col.class || 'text-right') + '">' +
+                        html += '<td class="' + (col.class || 'text-right') + '" data-label="' + escAttr(col.label) + '">' +
                             (val != null ? formatRibuan(val) : '-') + '</td>';
                     } else {
-                        html += '<td class="' + (col.class || '') + '">' +
+                        html += '<td class="' + (col.class || '') + '" data-label="' + escAttr(col.label) + '">' +
                             (val || '-') + '</td>';
                     }
                 });

@@ -3,7 +3,7 @@
 @section('content')
     <div class="row">
         {{-- Left: Table Listing --}}
-        <div class="col-md-8">
+        <div class="col-md-8 order-2 order-md-1">
             <div class="card shadow mb-4">
                 <div class="card-header py-3">
                     <h6 class="m-0 font-weight-bold text-primary">{{ $titlePage }}</h6>
@@ -23,7 +23,7 @@
                     </form>
 
                     <div class="table-responsive">
-                        <table class="table table-bordered" width="100%" cellspacing="0">
+                        <table class="table table-bordered table-mobile-card" width="100%" cellspacing="0">
                             <thead>
                                 <tr>
                                     <th>#</th>
@@ -36,15 +36,15 @@
                             <tbody>
                                 @forelse ($items as $item)
                                     <tr class="{{ isset($editData) && $editData->{$primaryKey} == $item->{$primaryKey} ? 'table-warning' : '' }}">
-                                        <td>{{ $loop->iteration + $items->firstItem() - 1 }}</td>
-                                        <td>{{ $item->rNama }}</td>
-                                        <td>{{ $item->rCreatedAt }}</td>
-                                        <td>
+                                        <td data-label="#">{{ $loop->iteration + $items->firstItem() - 1 }}</td>
+                                        <td data-label="Nama Role">{{ $item->rNama }}</td>
+                                        <td data-label="Dibuat">{{ $item->rCreatedAt }}</td>
+                                        <td data-label="Menu">
                                             <a href="{{ route('roles.menu', $item->rId) }}" class="btn btn-info btn-sm">
                                                 <i class="fas fa-bars"></i>
                                             </a>
                                         </td>
-                                        <td>
+                                        <td data-label="Aksi">
                                             <a href="{{ route($route . '.index', ['edit' => $item->{$primaryKey}]) }}"
                                                class="btn btn-warning btn-sm">
                                                 <i class="fas fa-edit"></i>
@@ -82,7 +82,7 @@
         </div>
 
         {{-- Right: Form --}}
-        <div class="col-md-4">
+        <div class="col-md-4 order-1 order-md-2">
             <div class="card shadow mb-4">
                 <div class="card-header py-3">
                     <h6 class="m-0 font-weight-bold text-primary">

@@ -138,6 +138,9 @@
 
             </ul>
 
+            {{-- Mobile drawer backdrop --}}
+            <div class="sidebar-backdrop" aria-hidden="true"></div>
+
             {{-- Content Wrapper --}}
             <div id="content-wrapper" class="d-flex flex-column">
 

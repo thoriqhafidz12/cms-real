@@ -37,7 +37,7 @@
                     </form>
 
                     <div class="table-responsive">
-                        <table class="table table-bordered" width="100%" cellspacing="0">
+                        <table class="table table-bordered table-mobile-card" width="100%" cellspacing="0">
                             <thead>
                                 <tr class="text-center">
                                     {{-- <th>No</th> --}}
@@ -56,51 +56,51 @@
                                         {{-- <td class="text-center">{{ $loop->iteration + $items->firstItem() - 1 }}</td> --}}
                                         @foreach ($grid as $column)
                                             @if ($column['type'] === 'text')
-                                                <td class="{{ $column['class'] ?? 'text-center' }}">
+                                                <td class="{{ $column['class'] ?? 'text-center' }}" data-label="{{ $column['label'] }}">
                                                     {{ $item->{$column['field']} ?? '-' }}</td>
                                             @elseif ($column['type'] === 'icon')
-                                                <td class="{{ $column['class'] ?? 'text-center' }}"><i
+                                                <td class="{{ $column['class'] ?? 'text-center' }}" data-label="{{ $column['label'] }}"><i
                                                         class="fas {{ $item->{$column['field']} }}"></i></td>
                                             @elseif ($column['type'] === 'badge')
-                                                <td class="{{ $column['class'] ?? 'text-center' }}"><span
+                                                <td class="{{ $column['class'] ?? 'text-center' }}" data-label="{{ $column['label'] }}"><span
                                                         class="badge badge-primary">{{ $item->{$column['field']} }}</span>
                                                 </td>
                                             @elseif ($column['type'] === 'date')
-                                                <td class="{{ $column['class'] ?? 'text-center' }}">
+                                                <td class="{{ $column['class'] ?? 'text-center' }}" data-label="{{ $column['label'] }}">
                                                     {{ $item->{$column['field']} ? \Carbon\Carbon::parse($item->{$column['field']})->format('d/m/Y') : '-' }}
                                                 </td>
                                             @elseif ($column['type'] === 'datetime')
-                                                <td class="{{ $column['class'] ?? 'text-center' }}">
+                                                <td class="{{ $column['class'] ?? 'text-center' }}" data-label="{{ $column['label'] }}">
                                                     {{ $item->{$column['field']} ? \Carbon\Carbon::parse($item->{$column['field']})->format('d/m/Y H:i:s') : '-' }}
                                                 </td>
                                             @elseif ($column['type'] === 'angka')
-                                                <td class="{{ $column['class'] ?? 'text-center' }}">
+                                                <td class="{{ $column['class'] ?? 'text-center' }}" data-label="{{ $column['label'] }}">
                                                     @php
                                                         $value = $item->{$column['field']} ?? 0;
                                                         echo number_format($value, 2, ',', '.');
                                                     @endphp
                                                 </td>
                                             @elseif ($column['type'] === 'rupiah')
-                                                <td class="{{ $column['class'] ?? 'text-center' }}">
+                                                <td class="{{ $column['class'] ?? 'text-center' }}" data-label="{{ $column['label'] }}">
                                                     @php
                                                         $value = $item->{$column['field']} ?? 0;
                                                         echo 'Rp ' . number_format($value, 2, ',', '.');
                                                     @endphp
                                                 </td>
                                             @else
-                                                <td class="{{ $column['class'] ?? 'text-center' }}">
+                                                <td class="{{ $column['class'] ?? 'text-center' }}" data-label="{{ $column['label'] }}">
                                                     {{ $item->{$column['field']} ?? '-' }}</td>
                                             @endif
                                             </td>
                                         @endforeach
-                                        <td class="text-center">
+                                        <td class="text-center" data-label="Bayar">
                                             <a class="btn btn-primary btn-sm" data-bs-toggle="modal"
                                                 data-bs-target="#bayarModal"
                                                 onclick="bayarModal({{ $item->{$primaryKey} }})">
                                                 <i class="fas fa-hand-holding-usd"></i>
                                             </a>
                                         </td>
-                                        <td class="text-center">
+                                        <td class="text-center" data-label="Aksi">
                                             <a href="{{ route($route . '.index', ['edit' => $item->{$primaryKey}]) }}"
                                                 class="btn btn-warning btn-sm">
                                                 <i class="fas fa-edit"></i>
@@ -114,7 +114,7 @@
                                                 </button>
                                             </form>
                                         </td>
-                                        <td class="text-center">
+                                        <td class="text-center" data-label="Detail">
                                             <a class="btn btn-info btn-sm btn-detail" data-toggle="collapse"
                                                 href="#collapseDetail{{ $item->{$primaryKey} }}" role="button"
                                                 aria-expanded="false" data-id="{{ $item->{$primaryKey} }}"
@@ -227,11 +227,11 @@
 
             $.each(data, function(i, item) {
                 html += '<tr>' +
-                    '<td class="text-center">' + (i + 1) + '</td>' +
-                    '<td class="text-center">' + (item.trcdTanggal || '-') + '</td>' +
-                    '<td class="text-right">Rp ' + formatRupiah(item.trcdNominal) + '</td>' +
-                    '<td class="text-center">' + (item.trcdKeterangan || '-') + '</td>' +
-                    '<td class="text-center">' + '<button type="button" class="btn btn-danger btn-sm" onclick="delDetail(' + item.trcdId + ')">' +
+                    '<td class="text-center" data-label="No">' + (i + 1) + '</td>' +
+                    '<td class="text-center" data-label="Tanggal Bayar">' + (item.trcdTanggal || '-') + '</td>' +
+                    '<td class="text-right" data-label="Nominal">Rp ' + formatRupiah(item.trcdNominal) + '</td>' +
+                    '<td class="text-center" data-label="Keterangan">' + (item.trcdKeterangan || '-') + '</td>' +
+                    '<td class="text-center" data-label="Aksi">' + '<button type="button" class="btn btn-danger btn-sm" onclick="delDetail(' + item.trcdId + ')">' +
                     '                <i class="fas fa-trash"></i>' +
                     '            </button>' +
                     '</td>' +
