@@ -63,24 +63,24 @@
                                             <span class="invalid-feedback" role="alert">{{ $message }}</span>
                                         @enderror
                                     </div>
-                                    <div class="form-group">
+                                    {{-- <div class="form-group">
                                         <div class="custom-control custom-checkbox small">
                                             <input type="checkbox" class="custom-control-input" id="customCheck"
                                                 name="remember">
                                             <label class="custom-control-label" for="customCheck">Remember Me</label>
                                         </div>
-                                    </div>
+                                    </div> --}}
                                     <button type="submit" class="btn btn-primary btn-user btn-block">
-                                        Login
+                                        Masuk
                                     </button>
                                 </form>
                                 <hr>
                                 {{-- <div class="text-center">
-                                        <a class="small" href="{{ url('/') }}/forgot-password">Forgot Password?</a>
-                                    </div>
-                                    <div class="text-center">
-                                        <a class="small" href="{{ url('/') }}/register">Create an Account!</a>
-                                    </div> --}}
+                                    <a class="small" href="{{ url('/') }}/forgot-password">Forgot Password?</a>
+                                </div> --}}
+                                <div class="text-center">
+                                    <a class="btn btn-info btn-user btn-sm" href="{{ url('/') }}/register">Buat Akun !</a>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -94,22 +94,21 @@
     </div>
 </body>
 
-@if(config('services.recaptcha.enabled'))
+@if (config('services.recaptcha.enabled'))
     <script src="https://www.google.com/recaptcha/api.js?render={{ config('services.recaptcha.site_key') }}"></script>
 
     <script>
-        document.getElementById('login-form').addEventListener('submit', function (event) {
+        document.getElementById('login-form').addEventListener('submit', function(event) {
             event.preventDefault();
 
             const form = this;
 
-            grecaptcha.ready(function () {
+            grecaptcha.ready(function() {
                 grecaptcha.execute(
-                    '{{ config('services.recaptcha.site_key') }}',
-                    {
+                    '{{ config('services.recaptcha.site_key') }}', {
                         action: 'login'
                     }
-                ).then(function (token) {
+                ).then(function(token) {
 
                     document.getElementById('recaptcha_token').value = token;
 

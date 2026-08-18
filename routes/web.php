@@ -10,6 +10,7 @@ use App\Http\Controllers\Keuangan\Master\MasterJenisPengeluaranController;
 use App\Http\Controllers\GantiPassController;
 use App\Http\Controllers\Aset\TerimaasetController;
 use App\Http\Controllers\Laporan\ArusKasController;
+use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\MenuController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserController;
@@ -32,6 +33,8 @@ Route::get('/debug-url', function () {
         'host' => request()->getHost(),
     ];
 });
+
+Route::resource('register', RegisterController::class);
 
 // Authenticated routes (only accessible when logged in)
 Route::middleware(['auth', 'checkRole'])->group(function () {
