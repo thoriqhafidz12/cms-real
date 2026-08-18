@@ -31,15 +31,15 @@ class TerimaasetController extends BaseController
             ],
             [
                 'name' => 'asTglTerima',
-                'label' => 'Tanggal',
+                'label' => 'Tanggal Terima',
                 'placeholder' => 'Masukkan tanggal',
                 'type' => 'date',
                 'col' => 'col-md-6',
-                'required' => true,
+                'required' => false,
             ],
             [
                 'name' => 'asTahun',
-                'label' => 'Tahun',
+                'label' => 'Tahun Terima',
                 'placeholder' => 'Masukkan tahun',
                 'type' => 'number',
                 'col' => 'col-md-6',
