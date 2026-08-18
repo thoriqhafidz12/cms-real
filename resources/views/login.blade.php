@@ -2,7 +2,7 @@
 
 {{-- <body class="bg-gradient-primary"> --}}
 
-<body
+<body class="bg-gradient-primary"
     style="background-image: url('{{ url('/') }}/assets/img/bg-login.jpg'); background-size: cover; background-position: center; background-repeat: no-repeat;">
     <div class="container">
 
