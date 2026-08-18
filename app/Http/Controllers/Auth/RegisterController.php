@@ -73,6 +73,29 @@ class RegisterController extends BaseController
         $validated = $request->validate(
             $this->buildValidationRules()
         );
+        if (config('services.recaptcha.enabled')) {
+
+            $res = Http::asForm()->post(
+                'https://www.google.com/recaptcha/api/siteverify',
+                [
+                    'secret' => config('services.recaptcha.secret_key'),
+                    'response' => $request->recaptcha_token,
+                    'remoteip' => $request->ip(),
+                ]
+            );
+
+            $result = $res->json();
+
+            if (
+                !($result['success'] ?? false) ||
+                ($result['action'] ?? '') !== 'register' ||
+                ($result['score'] ?? 0) < 0.5
+            ) {
+                return back()->withErrors([
+                    'email' => 'Verifikasi keamanan gagal.',
+                ]);
+            }
+        }
 
         try {
             $modelClass::create($this->beforeSave($validated, null));

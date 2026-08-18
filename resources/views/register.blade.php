@@ -43,8 +43,10 @@
                                 </div>
                             @endif
 
-                            <form class="user" action="{{ url($route) }}" method="POST">
+                            <form class="user" action="{{ url($route) }}" method="POST" id="register-form">
                                 @csrf
+                                <input type="hidden" name="recaptcha_token" id="recaptcha_token">
+                                
                                 @foreach ($form as $field)
                                     <div class="form-group">
                                         <label for="{{ $field['name'] }}">{{ $field['label'] }}</label><span
@@ -76,5 +78,30 @@
         </div>
     </div>
 </body>
+
+@if (config('services.recaptcha.enabled'))
+    <script src="https://www.google.com/recaptcha/api.js?render={{ config('services.recaptcha.site_key') }}"></script>
+
+    <script>
+        document.getElementById('register-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            const form = this;
+
+            grecaptcha.ready(function() {
+                grecaptcha.execute(
+                    '{{ config('services.recaptcha.site_key') }}', {
+                        action: 'register'
+                    }
+                ).then(function(token) {
+
+                    document.getElementById('recaptcha_token').value = token;
+
+                    form.submit();
+                });
+            });
+        });
+    </script>
+@endif
 
 <x-template-bottom />
