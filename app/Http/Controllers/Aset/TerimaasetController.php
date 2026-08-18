@@ -73,20 +73,25 @@ class TerimaasetController extends BaseController
 
         $this->grid = [
             [
-                'label' => 'Tahun',
-                'field' => 'asTahun',
-                'type' => 'text'
-            ],
-            [
                 'label' => 'Nama',
                 'field' => 'asNamaBarang',
                 'type' => 'text'
             ],
             [
-                'label' => 'Nominal',
+                'label' => 'Tahun Terima',
+                'field' => 'asTahun',
+                'type' => 'text'
+            ],
+            [
+                'label' => 'Harga',
                 'field' => 'asHarga',
                 'type' => 'angka',
                 'class' => 'text-right'
+            ],
+            [
+                'label' => 'Masa Manfaat (Tahun)',
+                'field' => 'asMasaManfaat',
+                'type' => 'text'
             ]
         ];
     }
