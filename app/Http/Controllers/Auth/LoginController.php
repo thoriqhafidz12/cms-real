@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Http;
 use Illuminate\View\View;
 
 class LoginController extends Controller
@@ -24,9 +25,26 @@ class LoginController extends Controller
     public function login(Request $request): RedirectResponse
     {
         $credentials = $request->validate([
-            'email'    => ['required', 'email'],
+            'email' => ['required', 'email'],
             'password' => ['required'],
         ]);
+
+        $res = Http::asForm()->post(
+            'https://www.google.com/recaptcha/api/siteverify',
+            [
+                'secret' => config('services.recaptcha.secret_key'),
+                'response' => $request->recaptcha_token,
+                'remoteip' => $request->ip(),
+            ]
+        );
+
+        $result = $res->json();
+
+        if (!($result['success'] ?? false)) {
+            return back()->withErrors([
+                'email' => 'Verifikasi keamanan gagal.',
+            ]);
+        }
 
         $remember = $request->boolean('remember');
 
@@ -61,7 +79,7 @@ class LoginController extends Controller
     {
         return response()->json([
             'authenticated' => Auth::check(),
-            'user'          => Auth::user(),
+            'user' => Auth::user(),
         ]);
     }
 }
