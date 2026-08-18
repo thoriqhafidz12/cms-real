@@ -15,7 +15,7 @@ class MenuController extends BaseController
         $this->titlePage = 'Daftar Menu';
         $this->primaryKey = 'mId';
         $this->table = 'menu';
-        $this->searchColumn = 'mNama';
+        $this->searchColumn = 'menu.mNama';
 
         $this->form = [
             [

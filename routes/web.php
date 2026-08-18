@@ -8,6 +8,7 @@ use App\Http\Controllers\Keuangan\Kas\PengeluaranController;
 use App\Http\Controllers\Keuangan\Master\MasterJenisPenerimaanController;
 use App\Http\Controllers\Keuangan\Master\MasterJenisPengeluaranController;
 use App\Http\Controllers\GantiPassController;
+use App\Http\Controllers\Aset\TerimaasetController;
 use App\Http\Controllers\Laporan\ArusKasController;
 use App\Http\Controllers\MenuController;
 use App\Http\Controllers\RoleController;
@@ -64,6 +65,10 @@ Route::middleware(['auth', 'checkRole'])->group(function () {
     // MENU KAS
     Route::resource('penerimaan', PenerimaanController::class);
     Route::resource('pengeluaran', PengeluaranController::class);
+
+    // MENU ASET
+    Route::resource('terima-aset', TerimaasetController::class);
+    Route::get('api/aset/detail/{id}', [TerimaasetController::class, 'getDetail'])->name('api.aset.detail');
 
     // API cicilan
     Route::get('api/cicilan/{id}/detail', [CicilanController::class, 'getDetail'])->name('api.cicilan.detail');
