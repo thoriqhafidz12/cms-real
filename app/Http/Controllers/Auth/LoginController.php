@@ -29,21 +29,28 @@ class LoginController extends Controller
             'password' => ['required'],
         ]);
 
-        $res = Http::asForm()->post(
-            'https://www.google.com/recaptcha/api/siteverify',
-            [
-                'secret' => config('services.recaptcha.secret_key'),
-                'response' => $request->recaptcha_token,
-                'remoteip' => $request->ip(),
-            ]
-        );
+        if (config('services.recaptcha.enabled')) {
 
-        $result = $res->json();
+            $res = Http::asForm()->post(
+                'https://www.google.com/recaptcha/api/siteverify',
+                [
+                    'secret' => config('services.recaptcha.secret_key'),
+                    'response' => $request->recaptcha_token,
+                    'remoteip' => $request->ip(),
+                ]
+            );
 
-        if (!($result['success'] ?? false)) {
-            return back()->withErrors([
-                'email' => 'Verifikasi keamanan gagal.',
-            ]);
+            $result = $res->json();
+
+            if (
+                !($result['success'] ?? false) ||
+                ($result['action'] ?? '') !== 'login' ||
+                ($result['score'] ?? 0) < 0.5
+            ) {
+                return back()->withErrors([
+                    'email' => 'Verifikasi keamanan gagal.',
+                ]);
+            }
         }
 
         $remember = $request->boolean('remember');

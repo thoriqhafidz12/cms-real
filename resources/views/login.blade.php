@@ -94,30 +94,29 @@
     </div>
 </body>
 
-<script src="https://www.google.com/recaptcha/api.js?render={{ config('services.recaptcha.site_key') }}"></script>
+@if(config('services.recaptcha.enabled'))
+    <script src="https://www.google.com/recaptcha/api.js?render={{ config('services.recaptcha.site_key') }}"></script>
 
-<script>
-    document.getElementById('login-form').addEventListener('submit', function(event) {
+    <script>
+        document.getElementById('login-form').addEventListener('submit', function (event) {
+            event.preventDefault();
 
-        event.preventDefault();
+            const form = this;
 
-        const form = this;
+            grecaptcha.ready(function () {
+                grecaptcha.execute(
+                    '{{ config('services.recaptcha.site_key') }}',
+                    {
+                        action: 'login'
+                    }
+                ).then(function (token) {
 
-        grecaptcha.ready(function() {
+                    document.getElementById('recaptcha_token').value = token;
 
-            grecaptcha.execute(
-                '{{ config('services.recaptcha.site_key') }}', {
-                    action: 'login'
-                }
-            ).then(function(token) {
-
-                document.getElementById('recaptcha_token').value = token;
-
-                form.submit();
+                    form.submit();
+                });
             });
-
         });
-
-    });
-</script>
+    </script>
+@endif
 <x-template-bottom />
