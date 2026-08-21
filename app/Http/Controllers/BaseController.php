@@ -17,6 +17,8 @@ abstract class BaseController extends Controller
 
     /** @var string Page title, e.g. 'Daftar Menu' */
     protected string $titlePage;
+    /** @var string Validation rules, e.g. 'required|string|max:255' */
+    protected array $rules = [];
 
     /** @var string Primary key column, e.g. 'mId' */
     protected string $primaryKey = 'id';
@@ -150,7 +152,6 @@ abstract class BaseController extends Controller
                     $fieldRules[] = 'string';
                     $fieldRules[] = 'min:4';
                     break;
-                case 'select':
                 case 'autocomplete':
                     $fieldRules[] = 'integer';
                     if (!empty($field['exists'])) {
@@ -177,6 +178,29 @@ abstract class BaseController extends Controller
             }
 
             $rules[$field['name']] = $fieldRules;
+        }
+
+        // Merge rules tambahan dari child class ($this->rules).
+        // Aturan unique di sini juga mengecualikan id record yang sedang diedit.
+        foreach ($this->rules as $fieldName => $fieldRules) {
+            if (is_string($fieldRules)) {
+                $fieldRules = explode('|', $fieldRules);
+            }
+
+            if ($excludeId !== null) {
+                $fieldRules = array_map(function ($rule) use ($excludeId) {
+                    if (is_string($rule) && str_starts_with($rule, 'unique:')) {
+                        // Format 'unique:table,column' → tambahkan id yang dikecualikan
+                        $segments = explode(',', substr($rule, strlen('unique:')));
+                        if (count($segments) === 2) {
+                            $rule .= ',' . $excludeId . ',' . $this->primaryKey;
+                        }
+                    }
+                    return $rule;
+                }, $fieldRules);
+            }
+
+            $rules[$fieldName] = $fieldRules;
         }
 
         return $rules;

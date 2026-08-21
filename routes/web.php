@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\GantiPassController;
+use App\Http\Controllers\Master\MasterAnggotaController;
 use App\Http\Controllers\MenuController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserController;
@@ -44,6 +45,10 @@ Route::middleware(['auth', 'checkRole'])->group(function () {
     Route::resource('roles', RoleController::class);
     Route::resource('users', UserController::class);
     Route::resource('menus', MenuController::class);
+
+    // MASTER
+    Route::resource('ms-anggota', MasterAnggotaController::class);
+    
 });
 
 // Redirect root to login or dashboard
