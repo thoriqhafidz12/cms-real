@@ -41,43 +41,11 @@
                         </thead>
                         <tbody>
                             @foreach ($parentMenus as $menu)
-                                @php
-                                    $children = $childMenus->get($menu->mId, collect());
-                                @endphp
-
-                                {{-- Parent Row --}}
-                                <tr class="table-secondary font-weight-bold">
-                                    <td data-label="Pilih">
-                                        <input type="checkbox" name="menu_ids[]" value="{{ $menu->mId }}"
-                                               class="menu-checkbox"
-                                               {{ in_array($menu->mId, $assignedMenuIds) ? 'checked' : '' }}>
-                                    </td>
-                                    <td data-label="Nama Menu">
-                                        <i class="fas fa-fw {{ $menu->mIcon ?: 'fa-folder' }}"></i>
-                                        {{ $menu->mNama }}
-                                        @if (!$menu->mRoute)
-                                            <span class="badge badge-warning">collapse</span>
-                                        @endif
-                                    </td>
-                                    <td data-label="Route">{{ $menu->mRoute ?? '— (tanpa route, collapse)' }}</td>
-                                    <td data-label="Level"><span class="badge badge-dark">Parent</span></td>
-                                </tr>
-
-                                {{-- Child Rows --}}
-                                @foreach ($children as $child)
-                                    <tr>
-                                        <td class="pl-5" data-label="Pilih">
-                                            <input type="checkbox" name="menu_ids[]" value="{{ $child->mId }}"
-                                                   class="menu-checkbox"
-                                                   {{ in_array($child->mId, $assignedMenuIds) ? 'checked' : '' }}>
-                                        </td>
-                                        <td data-label="Nama Menu">
-                                            <span class="ml-3">&rdsh; {{ $child->mNama }}</span>
-                                        </td>
-                                        <td data-label="Route">{{ $child->mRoute ?? '—' }}</td>
-                                        <td data-label="Level"><span class="badge badge-light">Child</span></td>
-                                    </tr>
-                                @endforeach
+                                @include('roles.partials.menu-row', [
+                                    'menu'      => $menu,
+                                    'depth'     => 1,
+                                    'ancestors' => [],
+                                ])
                             @endforeach
                         </tbody>
                     </table>

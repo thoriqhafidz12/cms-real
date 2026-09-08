@@ -216,10 +216,11 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     // 4) Klik link menu sungguhan → tutup drawer; toggle submenu
-    //    (data-toggle="collapse") TIDAK boleh menutup drawer,
+    //    (data-toggle="collapse" / "submenu") TIDAK boleh menutup drawer,
     //    agar submenu tetap bisa di-expand di dalam drawer.
     $(document).on('click',
-        '.sidebar .collapse-item, .sidebar a.nav-link:not([data-toggle="collapse"])',
+        '.sidebar .collapse-item:not([data-toggle="submenu"]), ' +
+        '.sidebar a.nav-link:not([data-toggle="collapse"])',
         function () {
             if (isMobile() && $('body').hasClass('sidebar-toggled')) {
                 $('body').removeClass('sidebar-toggled drawer-user-open');
@@ -235,3 +236,36 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 })();
+
+// ──────────────────────────────────────────────────────────────
+// SUBMENU BERTINGKAT (collapse di dalam collapse, level 2+)
+// Toggle di-render oleh layouts/partials/sidebar-menu.blade.php.
+// Sengaja TIDAK memakai plugin collapse Bootstrap agar container
+// submenu tidak ikut kena CSS flyout sb-admin-2
+// (.sidebar .nav-item .collapse → position:absolute).
+// ──────────────────────────────────────────────────────────────
+$(document).on('click', '.sidebar [data-toggle="submenu"]', function (e) {
+    e.preventDefault();
+    var $toggle = $(this);
+    var $sub = $($toggle.attr('data-target'));
+    if (!$sub.length) {
+        return;
+    }
+    var isOpen = $sub.hasClass('show');
+
+    // Accordion per grup: tutup submenu lain di container yang sama
+    // (collapse-inner untuk level 2, submenu-inner untuk level 3+).
+    $toggle.closest('.submenu-inner, .collapse-inner')
+        .children('.submenu.show')
+        .each(function () {
+            $(this).removeClass('show').slideUp(150);
+            $('.sidebar [data-target="#' + this.id + '"]')
+                .addClass('collapsed').attr('aria-expanded', 'false');
+        });
+
+    if (!isOpen) {
+        $sub.slideDown(150).addClass('show');
+    }
+    $toggle.toggleClass('collapsed', !isOpen)
+        .attr('aria-expanded', isOpen ? 'false' : 'true');
+});
