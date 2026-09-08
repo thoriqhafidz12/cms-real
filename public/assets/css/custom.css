@@ -619,6 +619,41 @@ transition: all 0.5s cubic-bezier(0.75, 0.2, 0.26, 0.7);
   }
 }
 
+/* ──────────────────────────────────────────────────────
+   SIDEBAR SUBMENU BERTINGKAT (collapse di dalam collapse, level 2+)
+   Dipakai layouts/partials/sidebar-menu.blade.php.
+   Container memakai class .submenu (bukan .collapse) agar tidak
+   ikut kena aturan flyout sb-admin-2 untuk
+   .sidebar .nav-item .collapse (position:absolute).
+   ────────────────────────────────────────────────────── */
+.sidebar .collapse-inner .submenu {
+  display: none;
+}
+.sidebar .collapse-inner .submenu.show {
+  display: block;
+}
+.sidebar .submenu .submenu-inner {
+  padding-left: 0.75rem; /* indent bertingkat mengikuti kedalaman */
+}
+.sidebar .collapse-item[data-toggle="submenu"] {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.sidebar .collapse-item[data-toggle="submenu"]::after {
+  width: 1rem;
+  text-align: center;
+  border: 0;
+  font-weight: 900;
+  font-size: 0.7rem;
+  opacity: 0.6;
+  content: '\f107'; /* fa-angle-down */
+  font-family: 'Font Awesome 5 Free';
+}
+.sidebar .collapse-item[data-toggle="submenu"].collapsed::after {
+  content: '\f105'; /* fa-angle-right */
+}
+
 /* ══════════════════════════════════════════════════════════
    MOBILE CARD TABLES  (< 576px) — baris jadi kartu bertumpuk
    Pemakaian: <table class="table table-bordered table-mobile-card">

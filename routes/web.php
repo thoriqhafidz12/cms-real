@@ -48,6 +48,13 @@ Route::middleware(['auth', 'checkRole'])->group(function () {
 
     // MASTER
     Route::resource('ms-anggota', MasterAnggotaController::class);
+    Route::resource('ms-jns-pinjaman', MasterJnsPinjamanController::class);
+    Route::resource('ms-jns-simpanan', MasterJnsSimpananController::class);
+
+    Route::resource('ms-akun', MasterAkunController::class);
+    Route::resource('ms-kelompok', MasterKelompokController::class);
+    Route::resource('ms-jenis', MasterJenisController::class);
+    Route::resource('ms-objek', MasterObjekController::class);
     
 });
 
