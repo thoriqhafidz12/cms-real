@@ -2,6 +2,8 @@
 
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\GantiPassController;
+use App\Http\Controllers\Master\Coa\MasterAkunController;
+use App\Http\Controllers\Master\Coa\MasterKelompokController;
 use App\Http\Controllers\Master\MasterAnggotaController;
 use App\Http\Controllers\MenuController;
 use App\Http\Controllers\RoleController;
@@ -32,6 +34,9 @@ Route::middleware(['auth', 'checkRole'])->group(function () {
     })->name('dashboard');
 
     Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
+
+    // API FOR COMBO
+    Route::get('api/akun/search', [MasterAkunController::class, 'search'])->name('api.akun.search');
 
     // MENU MANAGEMENT
     // Custom role menu routes (harus diatas resource agar tidak ditangkap {role} wildcard)

@@ -71,7 +71,7 @@
                     </label>
                     <input type="text" id="{{ $field['name'] }}_display"
                         class="form-control @error($field['name']) is-invalid @enderror" value="{{ $displayVal }}"
-                        placeholder="{{ $field['placeholder'] ?? '' }}" {{ !empty($field['required']) ? 'required' : '' }}
+                        placeholder="{{ $field['placeholder'] }}" {{ !empty($field['required']) ? 'required' : '' }}
                         oninput="autoNumericDot(this, '{{ $field['name'] }}')"
                         autocomplete="off">
                     <input type="hidden" name="{{ $field['name'] }}" id="{{ $field['name'] }}" value="{{ $rawVal }}">
@@ -89,7 +89,7 @@
                     </label>
                     <input type="{{ $field['type'] }}" name="{{ $field['name'] }}" id="{{ $field['name'] }}"
                         class="form-control @error($field['name']) is-invalid @enderror" value="{{ $oldVal }}"
-                        placeholder="{{ $field['placeholder'] ?? '' }}" {{ !empty($field['required']) ? 'required' : '' }}>
+                        placeholder="{{ $field['placeholder'] }}" {{ !empty($field['required']) ? 'required' : '' }}>
                     @error($field['name'])
                         <span class="invalid-feedback">{{ $message }}</span>
                     @enderror
@@ -156,6 +156,7 @@
                     $acTextField = $acConfig['textField'] ?? 'name';
                     $acValueField = $acConfig['valueField'] ?? 'id';
                     $acPlaceholder = $field['placeholder'] ?? '-- Cari dan pilih --';
+                    $acFill = $acConfig['fill'] ?? [];
                     $selectedText = $autocompleteSelected[$field['name']] ?? null;
                 @endphp
                 <div class="{{ $field['col'] ?? 'col-md-12' }} mb-2">
@@ -171,6 +172,7 @@
                         data-ac-text-field="{{ $acTextField }}"
                         data-ac-value-field="{{ $acValueField }}"
                         data-ac-placeholder="{{ $acPlaceholder }}"
+                        data-ac-fill="{{ json_encode($acFill) }}"
                         {{ !empty($field['required']) ? 'required' : '' }}>
                         @if ($oldVal)
                             <option value="{{ $oldVal }}" selected>
@@ -192,7 +194,7 @@
                     </label>
                     <textarea name="{{ $field['name'] }}" id="{{ $field['name'] }}"
                         class="form-control @error($field['name']) is-invalid @enderror"
-                        placeholder="{{ $field['placeholder'] ?? '' }}" {{ !empty($field['required']) ? 'required' : '' }}>{{ $oldVal }}</textarea>
+                        placeholder="{{ $field['placeholder'] }}" {{ !empty($field['required']) ? 'required' : '' }}>{{ $oldVal }}</textarea>
                     @error($field['name'])
                         <span class="invalid-feedback">{{ $message }}</span>
                     @enderror
@@ -246,10 +248,13 @@
                                 const results = Array.isArray(data) ? data : (data.data || data.results || []);
                                 return {
                                     results: results.map(function (item) {
-                                        return {
+                                        // Object.assign: semua field ekstra dari API
+                                        // ikut diteruskan (mis. msaKode, msaNama, a, b, ...),
+                                        // sementara id/text ditimpa sesuai konfigurasi field.
+                                        return Object.assign({}, item, {
                                             id: item[valueField],
                                             text: item[textField]
-                                        };
+                                        });
                                     })
                                 };
                             },
@@ -287,6 +292,27 @@
                             document.querySelector('.select2-search__field').focus();
                         }, 100);
                     });
+
+                    // Auto-fill field lain saat opsi dipilih.
+                    // Konfigurasi: 'fill' => ['targetFieldId' => 'sourceFieldDariAPI']
+                    // Contoh: 'fill' => ['mskAkunId' => 'msaId'] → #mskAkunId terisi dari msaId.
+                    if (el.dataset.acFill) {
+                        let fillMap = {};
+                        try {
+                            fillMap = JSON.parse(el.dataset.acFill);
+                        } catch (e) {
+                            fillMap = {};
+                        }
+                        $select.on('select2:select', function (e) {
+                            const d = e.params.data; // berisi id, text + semua field ekstra
+                            Object.keys(fillMap).forEach(function (targetId) {
+                                const targetEl = document.getElementById(targetId);
+                                if (targetEl && d[fillMap[targetId]] !== undefined) {
+                                    targetEl.value = d[fillMap[targetId]];
+                                }
+                            });
+                        });
+                    }
                 });
             });
         </script>

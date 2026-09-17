@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\Menu;
 use App\Models\Role;
-use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -106,7 +105,13 @@ class RoleController extends BaseController
         $parentMenus = $allMenus->whereNull('mParentId');
         $childMenus = $allMenus->whereNotNull('mParentId')->groupBy('mParentId');
 
-        return view('roles.menu', compact('role', 'parentMenus', 'childMenus', 'assignedMenuIds'));
+        // Menu level 3 (grandchild) untuk baris ceklis di bawah child-nya
+        $childIds = $allMenus->whereNotNull('mParentId')->pluck('mId');
+        $grandchildMenus = $allMenus->whereIn('mParentId', $childIds)->groupBy('mParentId');
+
+        return view('roles.menu', compact(
+            'role', 'parentMenus', 'childMenus', 'grandchildMenus', 'assignedMenuIds'
+        ));
     }
 
     /**
@@ -122,27 +127,5 @@ class RoleController extends BaseController
         return redirect()
             ->route('roles.index')
             ->with('success', "Akses menu untuk role \"{$role->rNama}\" berhasil disimpan.");
-    }
-
-    /**
-     * Hapus role — dicegah jika masih dipakai user, dan bersihkan role_menu
-     * agar tidak ada data yatim (role_menu menunjuk role yang sudah dihapus).
-     */
-    public function destroy(string $id): RedirectResponse
-    {
-        $role = Role::where('rId', $id)->firstOrFail();
-
-        if (User::where('role', $id)->exists()) {
-            return redirect()
-                ->route('roles.index')
-                ->with('error', "Role \"{$role->rNama}\" tidak bisa dihapus karena masih dipakai oleh user.");
-        }
-
-        $role->menus()->detach();
-        $role->delete();
-
-        return redirect()
-            ->route('roles.index')
-            ->with('success', "Role \"{$role->rNama}\" berhasil dihapus.");
     }
 }

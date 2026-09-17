@@ -23,7 +23,7 @@
                     <div class="sidebar-brand-icon rotate-n-15">
                         <i class="fas fa-file-invoice-dollar"></i>
                     </div>
-                    <div class="sidebar-brand-text mx-3">KOPERASI-TH</div>
+                    <div class="sidebar-brand-text mx-3">KEURIQ-TH</div>
                 </a>
 
                 <hr class="sidebar-divider my-0">
@@ -44,6 +44,10 @@
                     $parentMenus = $allMenus->whereNull('mParentId');
                     $childMenus = $allMenus->whereNotNull('mParentId')->groupBy('mParentId');
 
+                    // Menu level 3: anak dari menu child (contoh: Master → COA → AKUN/OBJEK)
+                    $childIds = $allMenus->whereNotNull('mParentId')->pluck('mId');
+                    $grandchildMenus = $allMenus->whereIn('mParentId', $childIds)->groupBy('mParentId');
+
                     /**
                      * Resolve route name dari mRoute prefix.
                      * Cek: 'dashboard' → Route::has('dashboard') = true
@@ -63,18 +67,23 @@
                     };
 
                     /**
-                     * Cek apakah menu ini (atau turunannya di level berapa pun) sedang aktif.
-                     * Dipakai juga oleh partial sidebar-menu untuk membuka collapse induk
-                     * ketika child di level 2+ sedang aktif.
+                     * Cek apakah menu ini (atau child/grandchild-nya) sedang aktif.
                      */
-                    $isMenuActive = function ($menu) use ($childMenus, $resolveRoute, &$isMenuActive): bool {
+                    $isActive = function ($menu, $children) use ($resolveRoute, $grandchildMenus): bool {
                         $routeName = $resolveRoute($menu->mRoute);
                         if ($routeName && request()->routeIs($routeName . '*')) {
                             return true;
                         }
-                        foreach ($childMenus->get($menu->mId, collect()) as $child) {
-                            if ($isMenuActive($child)) {
+                        foreach ($children as $child) {
+                            $childRoute = $resolveRoute($child->mRoute);
+                            if ($childRoute && request()->routeIs($childRoute . '*')) {
                                 return true;
+                            }
+                            foreach ($grandchildMenus->get($child->mId, collect()) as $gc) {
+                                $gcRoute = $resolveRoute($gc->mRoute);
+                                if ($gcRoute && request()->routeIs($gcRoute . '*')) {
+                                    return true;
+                                }
                             }
                         }
                         return false;
@@ -82,11 +91,86 @@
                 @endphp
 
                 @foreach ($parentMenus as $menu)
-                    @include('layouts.partials.sidebar-menu', [
-                        'menu'      => $menu,
-                        'depth'     => 1,
-                        'ancestors' => [],
-                    ])
+                    @php
+                        $children = $childMenus->get($menu->mId, collect());
+                        $routeName = $resolveRoute($menu->mRoute);
+                        $hasChildren = $children->isNotEmpty();
+                        $isCollapse = $hasChildren || !$routeName;
+                        $active = $isActive($menu, $children);
+                    @endphp
+
+                    @if ($isCollapse)
+                        {{-- Collapse / Dropdown Menu --}}
+                        <li class="nav-item {{ $active ? 'active' : '' }}">
+                            <a class="nav-link {{ $active ? '' : 'collapsed' }}" href="#" data-toggle="collapse"
+                                data-target="#collapseMenu{{ $menu->mId }}"
+                                aria-expanded="{{ $active ? 'true' : 'false' }}"
+                                aria-controls="collapseMenu{{ $menu->mId }}">
+                                <i class="fas fa-fw {{ $menu->mIcon ?: 'fa-folder' }}"></i>
+                                <span>{{ $menu->mNama }}</span>
+                            </a>
+                            <div id="collapseMenu{{ $menu->mId }}" class="collapse {{ $active ? 'show' : '' }}"
+                                data-parent="#accordionSidebar">
+                                <div class="bg-white py-2 collapse-inner rounded">
+                                    @if ($routeName)
+                                        {{-- Parent juga punya link sendiri --}}
+                                        <a class="collapse-item {{ request()->routeIs($routeName . '*') ? 'active' : '' }}"
+                                            href="{{ route($routeName) }}">
+                                            {{ $menu->mNama }}
+                                        </a>
+                                    @endif
+                                    @foreach ($children as $child)
+                                        @php
+                                            $childRoute = $resolveRoute($child->mRoute);
+                                            $grandchildren = $grandchildMenus->get($child->mId, collect());
+                                            $childActive = $childRoute && request()->routeIs($childRoute . '*');
+                                            // Submenu child terbuka bila salah satu grandchild-nya aktif
+                                            $subActive = $grandchildren->contains(function ($gc) use ($resolveRoute) {
+                                                $gcRoute = $resolveRoute($gc->mRoute);
+                                                return $gcRoute && request()->routeIs($gcRoute . '*');
+                                            });
+                                        @endphp
+
+                                        @if ($grandchildren->isNotEmpty())
+                                            {{-- Child yang punya submenu sendiri (menu level 3) --}}
+                                            <a class="collapse-item submenu-toggle {{ $childActive || $subActive ? 'active' : 'collapsed' }}"
+                                                href="#" data-toggle="collapse"
+                                                data-target="#subMenu{{ $child->mId }}"
+                                                aria-expanded="{{ $subActive ? 'true' : 'false' }}"
+                                                aria-controls="subMenu{{ $child->mId }}">
+                                                {{ $child->mNama }}
+                                                <i class="fas fa-chevron-down float-right mt-1 fa-xs"></i>
+                                            </a>
+                                            <div id="subMenu{{ $child->mId }}" class="collapse {{ $subActive ? 'show' : '' }}">
+                                                <div class="bg-light py-2 collapse-inner-nested rounded">
+                                                    @foreach ($grandchildren as $gc)
+                                                        @php $gcRoute = $resolveRoute($gc->mRoute); @endphp
+                                                        <a class="collapse-item {{ $gcRoute && request()->routeIs($gcRoute . '*') ? 'active' : '' }}"
+                                                            href="{{ $gcRoute ? route($gcRoute) : '#' }}">
+                                                            {{ $gc->mNama }}
+                                                        </a>
+                                                    @endforeach
+                                                </div>
+                                            </div>
+                                        @else
+                                            <a class="collapse-item {{ $childActive ? 'active' : '' }}"
+                                                href="{{ $childRoute ? route($childRoute) : '#' }}">
+                                                {{ $child->mNama }}
+                                            </a>
+                                        @endif
+                                    @endforeach
+                                </div>
+                            </div>
+                        </li>
+                    @else
+                        {{-- Single Link Menu --}}
+                        <li class="nav-item {{ $active ? 'active' : '' }}">
+                            <a class="nav-link" href="{{ route($routeName) }}">
+                                <i class="fas fa-fw {{ $menu->mIcon }}"></i>
+                                <span>{{ $menu->mNama }}</span>
+                            </a>
+                        </li>
+                    @endif
                 @endforeach
 
                 <hr class="sidebar-divider d-none d-md-block">

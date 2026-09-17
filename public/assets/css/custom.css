@@ -619,41 +619,6 @@ transition: all 0.5s cubic-bezier(0.75, 0.2, 0.26, 0.7);
   }
 }
 
-/* ──────────────────────────────────────────────────────
-   SIDEBAR SUBMENU BERTINGKAT (collapse di dalam collapse, level 2+)
-   Dipakai layouts/partials/sidebar-menu.blade.php.
-   Container memakai class .submenu (bukan .collapse) agar tidak
-   ikut kena aturan flyout sb-admin-2 untuk
-   .sidebar .nav-item .collapse (position:absolute).
-   ────────────────────────────────────────────────────── */
-.sidebar .collapse-inner .submenu {
-  display: none;
-}
-.sidebar .collapse-inner .submenu.show {
-  display: block;
-}
-.sidebar .submenu .submenu-inner {
-  padding-left: 0.75rem; /* indent bertingkat mengikuti kedalaman */
-}
-.sidebar .collapse-item[data-toggle="submenu"] {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-.sidebar .collapse-item[data-toggle="submenu"]::after {
-  width: 1rem;
-  text-align: center;
-  border: 0;
-  font-weight: 900;
-  font-size: 0.7rem;
-  opacity: 0.6;
-  content: '\f107'; /* fa-angle-down */
-  font-family: 'Font Awesome 5 Free';
-}
-.sidebar .collapse-item[data-toggle="submenu"].collapsed::after {
-  content: '\f105'; /* fa-angle-right */
-}
-
 /* ══════════════════════════════════════════════════════════
    MOBILE CARD TABLES  (< 576px) — baris jadi kartu bertumpuk
    Pemakaian: <table class="table table-bordered table-mobile-card">
@@ -792,4 +757,35 @@ transition: all 0.5s cubic-bezier(0.75, 0.2, 0.26, 0.7);
     margin-top: 1rem !important;
     margin-bottom: 1rem !important;
   }
+}
+
+/* ══════════════════════════════════════════════════════════
+   SUBMENU BERSARANG LEVEL 3 (menu di dalam collapse child)
+   Contoh: Master → COA → AKUN / OBJEK (layouts/app.blade.php)
+   ══════════════════════════════════════════════════════════ */
+
+/* Chevron toggle child yang punya submenu — berputar saat terbuka */
+.sidebar .collapse-inner .submenu-toggle .fa-chevron-down {
+  transition: transform 0.15s ease;
+}
+.sidebar .collapse-inner .submenu-toggle.collapsed .fa-chevron-down {
+  transform: rotate(-90deg);
+}
+
+/* Wadah item level 3: indent + latar abu muda agar terlihat berjenjang */
+.sidebar .collapse-inner .collapse-inner-nested {
+  margin-left: 0.75rem;
+  box-shadow: none;
+}
+.sidebar .collapse-inner .collapse-inner-nested .collapse-item {
+  padding-left: 1.5rem;
+}
+
+/* Mini-rail (sidebar.toggled) memakai flyout absolut untuk collapse
+   level 2 — collapse bersarang level 3 harus tetap inline di dalamnya */
+.sidebar .nav-item .collapse .collapse-inner .collapse,
+.sidebar .nav-item .collapse .collapse-inner .collapsing {
+  position: relative;
+  left: 0;
+  top: 0;
 }
