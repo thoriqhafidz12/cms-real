@@ -3,7 +3,9 @@
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\GantiPassController;
 use App\Http\Controllers\Master\Coa\MasterAkunController;
+use App\Http\Controllers\Master\Coa\MasterJenisController;
 use App\Http\Controllers\Master\Coa\MasterKelompokController;
+use App\Http\Controllers\Master\Coa\MasterObjekController;
 use App\Http\Controllers\Master\MasterAnggotaController;
 use App\Http\Controllers\MenuController;
 use App\Http\Controllers\RoleController;
@@ -22,7 +24,8 @@ Route::middleware('guest')->group(function () {
 });
 
 // Authenticated routes (only accessible when logged in)
-// checkRole: cek akses menu role user via role_menu — dashboard ikut dicek
+// checkRole: cek akses menu role user via role_menu — jika tidak ada akses, redirect ke 403
+// dashboard ikut dicek
 // karena terdaftar di tabel menu (mRoute = 'dashboard').
 Route::middleware(['auth', 'checkRole'])->group(function () {
     Route::get('/dashboard', function () {
@@ -37,6 +40,8 @@ Route::middleware(['auth', 'checkRole'])->group(function () {
 
     // API FOR COMBO
     Route::get('api/akun/search', [MasterAkunController::class, 'search'])->name('api.akun.search');
+    Route::get('api/kelompok/search', [MasterKelompokController::class, 'search'])->name('api.kelompok.search');
+    Route::get('api/jenis/search', [MasterJenisController::class, 'search'])->name('api.jenis.search');
 
     // MENU MANAGEMENT
     // Custom role menu routes (harus diatas resource agar tidak ditangkap {role} wildcard)

@@ -3,29 +3,29 @@
 namespace App\Http\Controllers\Master\Coa;
 
 use App\Http\Controllers\BaseController;
-use App\Models\Master\Coa\MasterKelompok;
-use Illuminate\Http\JsonResponse;
+use App\Models\Master\Coa\MasterObjek;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
-class MasterKelompokController extends BaseController
+
+class MasterObjekController extends BaseController
 {
     public function __construct()
     {
-        $this->model = MasterKelompok::class;
-        $this->route = 'ms-kelompok';
-        $this->titlePage = 'Daftar Kelompok';
-        $this->primaryKey = 'mskId';
-        $this->table = 'ms_kelompok';
-        $this->searchColumn = 'mskNama';
+        $this->model = MasterObjek::class;
+        $this->route = 'ms-objek';
+        $this->titlePage = 'Daftar Objek';
+        $this->primaryKey = 'msoId';
+        $this->table = 'ms_objek';
+        $this->searchColumn = 'msoNama';
 
         $this->rules = [
-            'mskKode' => 'required|unique:ms_kelompok,mskKode',
+            'msoKode' => 'required|unique:ms_objek,msoKode',
         ];
 
         $this->form = [
             [
-                'name' => 'mskAkunKode',
+                'name' => 'msoAkunKode',
                 'label' => 'Kode Akun',
                 'placeholder' => '-- Cari dan pilih akun --',
                 'type' => 'autocomplete',
@@ -36,22 +36,51 @@ class MasterKelompokController extends BaseController
                     'textField' => 'text',
                     'valueField' => 'id',
                 ],
-                // Value disimpan = msaKode (string), bukan msaId (integer)
                 'rules' => ['string', 'max:20'],
                 'exists' => 'ms_akun,msaKode',
             ],
             [
-                'name' => 'mskKode',
+                'name' => 'msoKelompokKode',
                 'label' => 'Kode Kelompok',
-                'placeholder' => 'Masukkan kode kelompok',
+                'placeholder' => '-- Cari dan pilih kelompok --',
+                'type' => 'autocomplete',
+                'col' => 'col-md-12',
+                'required' => true,
+                'autocomplete' => [
+                    'url' => route('api.kelompok.search'),
+                    'textField' => 'text',
+                    'valueField' => 'id',
+                ],
+                'rules' => ['string', 'max:20'],
+                'exists' => 'ms_kelompok,mskKode',
+            ],
+            [
+                'name' => 'msoJenisKode',
+                'label' => 'Kode Jenis',
+                'placeholder' => '-- Cari dan pilih jenis --',
+                'type' => 'autocomplete',
+                'col' => 'col-md-12',
+                'required' => true,
+                'autocomplete' => [
+                    'url' => route('api.jenis.search'),
+                    'textField' => 'text',
+                    'valueField' => 'id',
+                ],
+                'rules' => ['string', 'max:20'],
+                'exists' => 'ms_jenis,msjKode',
+            ],
+            [
+                'name' => 'msoJenisKode',
+                'label' => 'Kode Jenis',
+                'placeholder' => 'Masukkan kode jenis',
                 'type' => 'text',
                 'col' => 'col-md-12',
                 'required' => true,
             ],
             [
-                'name' => 'mskNama',
-                'label' => 'Nama Kelompok',
-                'placeholder' => 'Masukkan nama kelompok',
+                'name' => 'msoNama',
+                'label' => 'Nama Jenis',
+                'placeholder' => 'Masukkan nama jenis',
                 'type' => 'text',
                 'col' => 'col-md-12',
                 'required' => true,
@@ -61,13 +90,13 @@ class MasterKelompokController extends BaseController
         $this->grid =
             [
                 [
-                    'label' => 'Kode Kelompok',
-                    'field' => 'mskKode',
+                    'label' => 'Kode Jenis',
+                    'field' => 'msoJenisKode',
                     'type' => 'text'
                 ],
                 [
-                    'label' => 'Nama Kelompok',
-                    'field' => 'mskNama',
+                    'label' => 'Nama Jenis',
+                    'field' => 'msoNama',
                     'type' => 'text'
                 ]
             ];
@@ -116,27 +145,8 @@ class MasterKelompokController extends BaseController
 
     protected function beforeUpdate(array $data, $id): array
     {
-        $data['mskCreateBy'] = auth()->user()->name ?? '';
-        $data['mskUpdatedBy'] = auth()->user()->name ?? '';
+        $data['msoCreateBy'] = auth()->user()->name ?? '';
+        $data['msoUpdatedBy'] = auth()->user()->name ?? '';
         return $data;
-    }
-
-    /**
-     * API search untuk autocomplete select2.
-     */
-    public function search(Request $request): JsonResponse
-    {
-        $search = $request->get('search');
-        $data = $this->model::where('mskNama', 'like', "%{$search}%")
-            ->orderBy('mskKode')
-            ->limit(20)
-            ->get(['mskId', 'mskKode', 'mskNama']);
-
-        return response()->json($data->map(function ($item) {
-            return [
-                'id' => $item->mskKode,
-                'text' => $item->mskKode . ' - ' . $item->mskNama
-            ];
-        }));
     }
 }
