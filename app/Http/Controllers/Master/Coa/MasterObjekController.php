@@ -18,7 +18,7 @@ class MasterObjekController extends BaseController
         $this->titlePage = 'Daftar Objek';
         $this->primaryKey = 'msoId';
         $this->table = 'ms_objek';
-        $this->searchColumn = 'msoNama';
+        $this->searchColumn = ['msoKode', 'msoNama'];
 
         $this->rules = [
             'msoKode' => 'required|unique:ms_objek,msoKode',

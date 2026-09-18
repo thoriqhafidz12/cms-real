@@ -17,7 +17,7 @@ class JenisPinjamanController extends BaseController
         $this->titlePage = 'Daftar Jenis Pinjaman';
         $this->primaryKey = 'mjPinjamanId';
         $this->table = 'ms_jnspinjaman';
-        $this->searchColumn = 'mjPinjamanNama';
+        $this->searchColumn = ['mjPinjamanNama', 'mjPinjamanKode', 'mjTipeBunga', 'mjStatus'];
 
         // $this->rules = [
         //     'mjPinjamanKode' => 'required|unique:ms_jnspinjaman,mjPinjamanKode',

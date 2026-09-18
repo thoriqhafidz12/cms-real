@@ -17,7 +17,7 @@ class MasterAnggotaController extends BaseController
         $this->titlePage = 'Daftar Anggota';
         $this->primaryKey = 'maId';
         $this->table = 'ms_anggota';
-        $this->searchColumn = 'maNama';
+        $this->searchColumn = ['maNama', 'maAlamat', 'maNoIdentitas'];
 
         $this->rules = [
             'maNoIdentitas' => 'required|string|max:16|unique:ms_anggota,maNoIdentitas'

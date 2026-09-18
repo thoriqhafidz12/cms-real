@@ -6,6 +6,7 @@ use App\Http\Controllers\Master\Coa\MasterAkunController;
 use App\Http\Controllers\Master\Coa\MasterJenisController;
 use App\Http\Controllers\Master\Coa\MasterKelompokController;
 use App\Http\Controllers\Master\Coa\MasterObjekController;
+use App\Http\Controllers\Master\JenisSimpananController;
 use App\Http\Controllers\Master\MasterAnggotaController;
 use App\Http\Controllers\Master\JenisPinjamanController;
 use App\Http\Controllers\MenuController;
@@ -61,7 +62,7 @@ Route::middleware(['auth', 'checkRole'])->group(function () {
     // MASTER
     Route::resource('ms-anggota', MasterAnggotaController::class);
     Route::resource('ms-jns-pinjaman', JenisPinjamanController::class);
-    Route::resource('ms-jns-simpanan', MasterJnsSimpananController::class);
+    Route::resource('ms-jns-simpanan', JenisSimpananController::class);
 
     Route::resource('ms-akun', MasterAkunController::class);
     Route::resource('ms-kelompok', MasterKelompokController::class);
