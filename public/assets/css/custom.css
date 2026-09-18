@@ -309,6 +309,36 @@ transition: all 0.5s cubic-bezier(0.75, 0.2, 0.26, 0.7);
     to   { opacity: 1; transform: translateY(0); }
 }
 
+/* ── BATAS TINGGI DAFTAR HASIL ─────────────────────────
+   max-height di bawah hanya FALLBACK (relatif terhadap viewport)
+   bila JS tidak sempat berjalan. Nilai pastinya selalu dihitung
+   ulang oleh JS berdasarkan posisi dropdown terhadap footer,
+   lalu ditimpa lewat inline style. */
+.select2-dropdown-custom .select2-results__options {
+    max-height: 60vh;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: #c9cbe0 #f2f3f8;
+}
+
+.select2-dropdown-custom .select2-results__options::-webkit-scrollbar {
+    width: 8px;
+}
+
+.select2-dropdown-custom .select2-results__options::-webkit-scrollbar-track {
+    background: #f2f3f8;
+    border-radius: 4px;
+}
+
+.select2-dropdown-custom .select2-results__options::-webkit-scrollbar-thumb {
+    background: #c9cbe0;
+    border-radius: 4px;
+}
+
+.select2-dropdown-custom .select2-results__options::-webkit-scrollbar-thumb:hover {
+    background: #a7aac4;
+}
+
 /* Search input di dalam dropdown */
 .select2-dropdown-custom .select2-search__field {
     border: 1px solid #e3e6f0 !important;

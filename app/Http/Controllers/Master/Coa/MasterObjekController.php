@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Master\Coa;
 
 use App\Http\Controllers\BaseController;
 use App\Models\Master\Coa\MasterObjek;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
@@ -148,5 +149,26 @@ class MasterObjekController extends BaseController
         $data['msoCreateBy'] = auth()->user()->name ?? '';
         $data['msoUpdatedBy'] = auth()->user()->name ?? '';
         return $data;
+    }
+
+    public function search(Request $request): JsonResponse
+    {
+        $search = $request->get('search');
+        $fObjek = $request->get('fObjek', []);
+
+        $data = $this->model::where('msoNama', 'like', "%{$search}%")
+            ->orderBy('msoKode')
+            ->when(!empty($fObjek), function ($query) use ($fObjek) {
+                $query->where('msoJenisKode', 'LIKE', "%$fObjek%");
+            })
+            ->limit(20)
+            ->get(['msoId', 'msoKode', 'msoNama']);
+
+        return response()->json($data->map(function ($item) {
+            return [
+                'id' => $item->msoKode,
+                'text' => $item->msoKode . ' - ' . $item->msoNama
+            ];
+        }));
     }
 }

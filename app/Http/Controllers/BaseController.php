@@ -153,10 +153,11 @@ abstract class BaseController extends Controller
                     $fieldRules[] = 'min:4';
                     break;
                 case 'autocomplete':
-                    // Default: value berupa id numerik. Field dengan 'rules' sendiri
-                    // (mis. value berupa kode string) boleh menimpa aturan ini.
+                    // Default: value berupa string (kode seperti '1-1000').
+                    // Field dengan 'rules' sendiri boleh menimpa aturan ini.
                     if (empty($field['rules'])) {
-                        $fieldRules[] = 'integer';
+                        $fieldRules[] = 'string';
+                        $fieldRules[] = 'max:225';
                     }
                     if (!empty($field['exists'])) {
                         $fieldRules[] = 'exists:' . $field['exists'];
@@ -172,8 +173,9 @@ abstract class BaseController extends Controller
                     break;
             }
 
-            // Aturan tambahan/override spesifik field (mis. 'string|max:20' untuk
-            // autocomplete yang valuenya kode, bukan id integer)
+            // Aturan tambahan/override spesifik field (mis. 'integer' untuk
+            // autocomplete yang valuenya memang id numerik, atau
+            // 'string|max:20' untuk kode yang lebih pendek dari default)
             if (!empty($field['rules'])) {
                 $extra = is_array($field['rules']) ? $field['rules'] : explode('|', $field['rules']);
                 $fieldRules = array_merge($fieldRules, $extra);

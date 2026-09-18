@@ -223,11 +223,52 @@
         @push('scripts')
         <script>
             document.addEventListener('DOMContentLoaded', function () {
+                const acSelects = [];
+
+                /**
+                 * Batasi tinggi dropdown autocomplete agar tidak melewati footer.
+                 * Dihitung dinamis dari posisi daftar hasil terhadap footer/viewport,
+                 * sehingga otomatis menyesuaikan saat window di-resize.
+                 * (Fungsi pencarian, AJAX, dan struktur hasil TIDAK diubah.)
+                 */
+                function constrainSelect2Dropdown($select) {
+                    const data = $select.data('select2');
+                    if (!data) return;
+
+                    const $dropdown = data.dropdown.$dropdown;
+                    if (!$dropdown || !$dropdown.is(':visible')) return;
+
+                    const $results = $dropdown.find('.select2-results__options');
+                    if (!$results.length) return;
+
+                    // Batas bawah yang tidak boleh dilewati:
+                    // posisi atas footer, atau dasar viewport bila footer belum terlihat
+                    let limitBottom = window.innerHeight;
+                    const $footer = $('footer').first();
+                    if ($footer.length) {
+                        limitBottom = Math.min(limitBottom, $footer[0].getBoundingClientRect().top);
+                    }
+
+                    // Sisa ruang dari atas daftar hasil sampai batas bawah
+                    // (dikurangi jarak aman 12px di atas footer)
+                    const gap = 12;
+                    const resultsTop = $results[0].getBoundingClientRect().top;
+                    const available = Math.max(0, Math.floor(limitBottom - gap - resultsTop));
+
+                    // max-height hanya membatasi: bila hasil sedikit dan lebih
+                    // pendek dari nilai ini, dropdown tetap tampil utuh seperti biasa
+                    $results.css({
+                        'max-height': available + 'px',
+                        'overflow-y': 'auto'
+                    });
+                }
+
                 document.querySelectorAll('.autocomplete-select').forEach(function (el) {
                     const url = el.dataset.acUrl;
                     const textField = el.dataset.acTextField || 'name';
                     const valueField = el.dataset.acValueField || 'id';
                     const placeholder = el.dataset.acPlaceholder || '-- Cari dan pilih --';
+                    const fill = el.dataset.acFill ? JSON.parse(el.dataset.acFill) : {};
                     const $select = $(el);
 
                     $select.select2({
@@ -242,7 +283,7 @@
                             dataType: 'json',
                             delay: 300,
                             data: function (params) {
-                                return { search: params.term || '' };
+                                return { search: params.term || '', ...fill };
                             },
                             processResults: function (data) {
                                 const results = Array.isArray(data) ? data : (data.data || data.results || []);
@@ -286,33 +327,27 @@
                         }
                     });
 
-                    // Auto-fokus ke search input saat dropdown terbuka
+                    // Batasi tinggi dropdown + auto-fokus search saat dropdown terbuka
                     $select.on('select2:open', function () {
+                        setTimeout(function () {
+                            constrainSelect2Dropdown($select);
+                        }, 0);
+
+                        // Auto-fokus ke search input
                         setTimeout(function () {
                             document.querySelector('.select2-search__field').focus();
                         }, 100);
                     });
 
-                    // Auto-fill field lain saat opsi dipilih.
-                    // Konfigurasi: 'fill' => ['targetFieldId' => 'sourceFieldDariAPI']
-                    // Contoh: 'fill' => ['mskAkunId' => 'msaId'] → #mskAkunId terisi dari msaId.
-                    if (el.dataset.acFill) {
-                        let fillMap = {};
-                        try {
-                            fillMap = JSON.parse(el.dataset.acFill);
-                        } catch (e) {
-                            fillMap = {};
-                        }
-                        $select.on('select2:select', function (e) {
-                            const d = e.params.data; // berisi id, text + semua field ekstra
-                            Object.keys(fillMap).forEach(function (targetId) {
-                                const targetEl = document.getElementById(targetId);
-                                if (targetEl && d[fillMap[targetId]] !== undefined) {
-                                    targetEl.value = d[fillMap[targetId]];
-                                }
-                            });
-                        });
-                    }
+                    acSelects.push($select);
+                });
+
+                // Hitung ulang batas tinggi bila ukuran window berubah
+                // saat dropdown masih terbuka
+                $(window).on('resize', function () {
+                    acSelects.forEach(function ($select) {
+                        constrainSelect2Dropdown($select);
+                    });
                 });
             });
         </script>

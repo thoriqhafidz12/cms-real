@@ -7,6 +7,7 @@ use App\Http\Controllers\Master\Coa\MasterJenisController;
 use App\Http\Controllers\Master\Coa\MasterKelompokController;
 use App\Http\Controllers\Master\Coa\MasterObjekController;
 use App\Http\Controllers\Master\MasterAnggotaController;
+use App\Http\Controllers\Master\JenisPinjamanController;
 use App\Http\Controllers\MenuController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserController;
@@ -42,6 +43,7 @@ Route::middleware(['auth', 'checkRole'])->group(function () {
     Route::get('api/akun/search', [MasterAkunController::class, 'search'])->name('api.akun.search');
     Route::get('api/kelompok/search', [MasterKelompokController::class, 'search'])->name('api.kelompok.search');
     Route::get('api/jenis/search', [MasterJenisController::class, 'search'])->name('api.jenis.search');
+    Route::get('api/objek/search', [MasterObjekController::class, 'search'])->name('api.objek.search');
 
     // MENU MANAGEMENT
     // Custom role menu routes (harus diatas resource agar tidak ditangkap {role} wildcard)
@@ -58,7 +60,7 @@ Route::middleware(['auth', 'checkRole'])->group(function () {
 
     // MASTER
     Route::resource('ms-anggota', MasterAnggotaController::class);
-    Route::resource('ms-jns-pinjaman', MasterJnsPinjamanController::class);
+    Route::resource('ms-jns-pinjaman', JenisPinjamanController::class);
     Route::resource('ms-jns-simpanan', MasterJnsSimpananController::class);
 
     Route::resource('ms-akun', MasterAkunController::class);
