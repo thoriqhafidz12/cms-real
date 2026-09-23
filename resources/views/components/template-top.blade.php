@@ -9,6 +9,7 @@
     <meta name="author" content="">
 
     <title>CMS-APP</title>
+    <link rel="icon" type="image/png" href="{{ asset('assets/img/logo_putih_th.png') }}">
 
     <!-- Custom fonts for this template-->
     <link href="{{ url('/') }}/assets/vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">

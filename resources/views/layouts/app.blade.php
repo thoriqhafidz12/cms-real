@@ -21,7 +21,7 @@
                 <a class="sidebar-brand d-flex align-items-center justify-content-center"
                     href="{{ route('dashboard') }}">
                     <div class="sidebar-brand-icon rotate-n-15">
-                        <i class="fas fa-file-invoice-dollar"></i>
+                        <img src="{{ url('/') }}/assets/img/logo_putih_th.png" alt="Logo" width="40">
                     </div>
                     <div class="sidebar-brand-text mx-3">KEURIQ-TH</div>
                 </a>
