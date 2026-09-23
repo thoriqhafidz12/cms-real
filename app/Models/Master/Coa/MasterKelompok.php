@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 
-#[Fillable(['mskAkunKode', 'mskKode', 'mskNama'])]
+#[Fillable(['mskAkunKode', 'mskKode', 'mskNama', 'mskCreatedBy', 'mskUpdatedBy', 'mskDeletedBy'])]
 #[Table('ms_kelompok')]
 class MasterKelompok extends Model
 {

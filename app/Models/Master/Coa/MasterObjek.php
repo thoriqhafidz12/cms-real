@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Model;
 
-#[Fillable(['msoAkunKode', 'msoKelompokKode', 'msoJenisKode', 'msoKode', 'msoNama'])]
+#[Fillable(['msoAkunKode', 'msoKelompokKode', 'msoJenisKode', 'msoKode', 'msoNama', 'msoCreatedBy', 'msoUpdatedBy', 'msoDeletedBy'])]
 #[Table('ms_objek')]
 
 class MasterObjek extends Model

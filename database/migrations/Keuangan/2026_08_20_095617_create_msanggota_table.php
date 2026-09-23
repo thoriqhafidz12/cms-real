@@ -29,6 +29,10 @@ return new class extends Migration {
             $table->datetime('maCreatedAt')->nullable();
             $table->string('maUpdatedBy', 50)->nullable();
             $table->datetime('maUpdatedAt')->nullable();
+            $table->string('maDeletedBy', 50)->nullable();
+            $table->datetime('maDeletedAt')->nullable();
+
+            $table->index(['maKode', 'maNama', 'maNoIdentitas']);
         });
     }
 

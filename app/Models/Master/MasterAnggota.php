@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Model;
 
-#[Fillable(['maKode', 'maNama', 'maAlamat', 'maNoTelp', 'maNoIdentitas', 'maTempatLahir', 'maTglLahir', 'maJnsKelamin', 'maPekerjaan', 'maTglGabung', 'maStatusPernikahan', 'maNamaIbuKandung', 'maStatus'])]
+#[Fillable(['maKode', 'maNama', 'maAlamat', 'maNoTelp', 'maNoIdentitas', 'maTempatLahir', 'maTglLahir', 'maJnsKelamin', 'maPekerjaan', 'maTglGabung', 'maStatusPernikahan', 'maNamaIbuKandung', 'maStatus', 'maCreatedBy', 'maUpdatedBy'])]
 #[Table('ms_anggota')]
 class MasterAnggota extends Model
 {

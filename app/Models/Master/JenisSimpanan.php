@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Model;
 
 #[Table('ms_jnssimpanan')]
-#[Fillable(['mjsKodeSimpanan', 'mjsNamaSimpanan', 'mjsTipeSimpanan', 'mjsNominalMinimal', 'mjsBisaDitarik', 'mjsAkunGl', 'mjsKeterangan', 'mjsStatus'])]
+#[Fillable(['mjsKodeSimpanan', 'mjsNamaSimpanan', 'mjsTipeSimpanan', 'mjsNominalMinimal', 'mjsBisaDitarik', 'mjsAkunGl', 'mjsKeterangan', 'mjsStatus', 'mjsCreateBy', 'mjsUpdateBy', 'mjsDeleteBy'])]
 
 class JenisSimpanan extends Model
 {

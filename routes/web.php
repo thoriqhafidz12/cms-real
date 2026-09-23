@@ -6,9 +6,10 @@ use App\Http\Controllers\Master\Coa\MasterAkunController;
 use App\Http\Controllers\Master\Coa\MasterJenisController;
 use App\Http\Controllers\Master\Coa\MasterKelompokController;
 use App\Http\Controllers\Master\Coa\MasterObjekController;
+use App\Http\Controllers\Master\JenisPinjamanController;
 use App\Http\Controllers\Master\JenisSimpananController;
 use App\Http\Controllers\Master\MasterAnggotaController;
-use App\Http\Controllers\Master\JenisPinjamanController;
+use App\Http\Controllers\Master\MetodePembayaranController;
 use App\Http\Controllers\MenuController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserController;
@@ -68,7 +69,7 @@ Route::middleware(['auth', 'checkRole'])->group(function () {
     Route::resource('ms-kelompok', MasterKelompokController::class);
     Route::resource('ms-jenis', MasterJenisController::class);
     Route::resource('ms-objek', MasterObjekController::class);
-    
+    Route::resource('ms-metode-bayar', MetodePembayaranController::class);
 });
 
 // Redirect root to login or dashboard

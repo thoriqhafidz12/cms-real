@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 
-#[Fillable(['msaKode', 'msaNama'])]
+#[Fillable(['msaKode', 'msaNama', 'msaCreatedBy', 'msaCreatedBy'])]
 #[Table('ms_akun')]
 class MasterAkun extends Model
 {
@@ -14,5 +14,5 @@ class MasterAkun extends Model
     public const CREATED_AT = 'msaCreatedAt';
     public const CREATED_BY = 'msaCreatedBy';
     public const UPDATED_AT = 'msaUpdatedAt';
-    public const UPDATED_BY = 'msaUpdatedBy';
+    public const UPDATED_BY = 'msaCreatedBy';
 }

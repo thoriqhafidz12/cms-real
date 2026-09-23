@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
 
@@ -76,7 +77,15 @@ abstract class BaseController extends Controller
             $this->buildValidationRules()
         );
 
-        $res = $modelClass::create($this->beforeSave($validated, null));
+        // $res = $modelClass::create($this->beforeSave($validated, null));
+        if (method_exists($this, 'beforeSave')) {
+            $data = $this->beforeSave($validated, null);
+        }
+
+        $data[$modelClass::CREATED_BY] = auth()->user()->name;
+        $data[$modelClass::CREATED_AT] = now();
+
+        $res = $modelClass::create($data);
 
         if (method_exists($this, 'afterSave')) {
             $this->afterSave($res->toArray());
@@ -99,7 +108,17 @@ abstract class BaseController extends Controller
             $this->buildValidationRules($id)
         );
 
-        $record->update($this->beforeUpdate($validated, $id));
+        if (method_exists($this, 'beforeUpdate')) {
+            $data = $this->beforeUpdate($validated, $record);
+        } else {
+            $data = $validated;
+        }
+
+        $data[$modelClass::UPDATED_BY] = auth()->user()->name;
+        $data[$modelClass::UPDATED_AT] = now();
+
+        $record->update($data);
+        // $record->update($this->beforeUpdate($validated, $id));
 
         return redirect()
             ->route($this->route . '.index')
@@ -113,7 +132,7 @@ abstract class BaseController extends Controller
     {
         $modelClass = $this->model;
         $record = $modelClass::where($this->primaryKey, $id)->firstOrFail();
-        
+
         if (method_exists($this, 'beforeDelete')) {
             $this->beforeDelete($id);
         }

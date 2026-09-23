@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Model;
 
-#[Fillable(['msjAkunKode', 'msjKelompokKode', 'msjKode', 'msjNama'])]
+#[Fillable(['msjAkunKode', 'msjKelompokKode', 'msjKode', 'msjNama', 'msjCreatedBy', 'msjUpdatedBy', 'msjDeletedBy'])]
 #[Table('ms_jenis')]
 
 class MasterJenis extends Model
