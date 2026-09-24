@@ -9,6 +9,7 @@ use App\Http\Controllers\Master\Coa\MasterObjekController;
 use App\Http\Controllers\Master\JenisPinjamanController;
 use App\Http\Controllers\Master\JenisSimpananController;
 use App\Http\Controllers\Master\MasterAnggotaController;
+use App\Http\Controllers\Master\MasterBankkasController;
 use App\Http\Controllers\Master\MetodePembayaranController;
 use App\Http\Controllers\MenuController;
 use App\Http\Controllers\RoleController;
@@ -70,6 +71,8 @@ Route::middleware(['auth', 'checkRole'])->group(function () {
     Route::resource('ms-jenis', MasterJenisController::class);
     Route::resource('ms-objek', MasterObjekController::class);
     Route::resource('ms-metode-bayar', MetodePembayaranController::class);
+
+    Route::resource('ms-bank-kas', MasterBankkasController::class);
 });
 
 // Redirect root to login or dashboard

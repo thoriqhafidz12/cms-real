@@ -210,6 +210,12 @@ abstract class BaseController extends Controller
             }
 
             $rules[$field['name']] = $fieldRules;
+
+            // Field pasangan (nameValue) pada tipe autocomplete_name ikut
+            // divalidasi agar nilainya (mis. nama) ikut tersimpan ke database.
+            if (!empty($field['nameValue']) && !isset($rules[$field['nameValue']])) {
+                $rules[$field['nameValue']] = ['nullable', 'string', 'max:225'];
+            }
         }
 
         // Merge rules tambahan dari child class ($this->rules).

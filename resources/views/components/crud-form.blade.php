@@ -14,10 +14,10 @@
 @endphp
 
 {{-- Load Select2 hanya jika ada field autocomplete --}}
-@if($hasAutocomplete)
+@if ($hasAutocomplete)
     @once
         @push('styles')
-           <link href="{{ url('/') }}/assets/css/select2.min.css" rel="stylesheet">
+            <link href="{{ url('/') }}/assets/css/select2.min.css" rel="stylesheet">
         @endpush
         @push('scripts')
             <script src="{{ url('/') }}/assets/js/select2.min.js"></script>
@@ -25,7 +25,7 @@
     @endonce
 @endif
 
-<form action="{{ $action }}" method="POST"{{ ($formId ?? null) ? ' id="' . $formId . '"' : '' }}>
+<form action="{{ $action }}" method="POST"{{ $formId ?? null ? ' id="' . $formId . '"' : '' }}>
     @csrf
     @if ($isEdit)
         @method('PUT')
@@ -36,7 +36,7 @@
             @php
                 $oldVal = old($field['name'], $isEdit ? $editData->{$field['name']} : null);
             @endphp
-    
+
             @if ($field['type'] === 'hidden')
                 <input type="hidden" name="{{ $field['name'] }}" id="{{ $field['name'] }}" value="{{ $oldVal }}">
             @elseif (in_array($field['type'], ['text', 'email', 'password', 'number']))
@@ -48,7 +48,8 @@
                         @endif
                     </label>
                     <input type="{{ $field['type'] }}" name="{{ $field['name'] }}" id="{{ $field['name'] }}"
-                        class="form-control @error($field['name']) is-invalid @enderror" value="{{ $field['type'] != 'password' ? $oldVal : '' }}"
+                        class="form-control @error($field['name']) is-invalid @enderror"
+                        value="{{ $field['type'] != 'password' ? $oldVal : '' }}"
                         placeholder="{{ $field['placeholder'] ?? '' }}"
                         {{ !empty($field['required']) ? 'required' : '' }}
                         {{ !empty($field['readonly']) ? 'readonly' : '' }}
@@ -72,9 +73,9 @@
                     <input type="text" id="{{ $field['name'] }}_display"
                         class="form-control @error($field['name']) is-invalid @enderror" value="{{ $displayVal }}"
                         placeholder="{{ $field['placeholder'] }}" {{ !empty($field['required']) ? 'required' : '' }}
-                        oninput="autoNumericDot(this, '{{ $field['name'] }}')"
-                        autocomplete="off">
-                    <input type="hidden" name="{{ $field['name'] }}" id="{{ $field['name'] }}" value="{{ $rawVal }}">
+                        oninput="autoNumericDot(this, '{{ $field['name'] }}')" autocomplete="off">
+                    <input type="hidden" name="{{ $field['name'] }}" id="{{ $field['name'] }}"
+                        value="{{ $rawVal }}">
                     @error($field['name'])
                         <span class="invalid-feedback">{{ $message }}</span>
                     @enderror
@@ -158,6 +159,21 @@
                     $acPlaceholder = $field['placeholder'] ?? '-- Cari dan pilih --';
                     $acFill = $acConfig['fill'] ?? [];
                     $selectedText = $autocompleteSelected[$field['name']] ?? null;
+                    // Saat edit: susun teks "kode - nama" agar tampilan select2
+                    // konsisten dengan format hasil pencarian API
+                    if (
+                        !$selectedText &&
+                        $isEdit &&
+                        !empty($field['nameValue']) &&
+                        !empty($editData->{$field['nameValue']})
+                    ) {
+                        $selectedText = $oldVal . ' - ' . $editData->{$field['nameValue']};
+                    }
+
+                    // Nilai field nameValue diambil dari database (nama),
+                    // bukan dari value (kode). Saat pilih baru, JS akan
+                    // menimpa nilai ini dengan hiddenValue dari API.
+                    $hiddenVal = old($field['nameValue'], $isEdit ? $editData->{$field['nameValue']} ?? '' : null);
                 @endphp
                 <div class="{{ $field['col'] ?? 'col-md-12' }} mb-2">
                     <label>
@@ -168,11 +184,9 @@
                     </label>
                     <select name="{{ $field['name'] }}" id="{{ $field['name'] }}"
                         class="form-control autocomplete-select @error($field['name']) is-invalid @enderror"
-                        data-ac-url="{{ $acUrl }}"
-                        data-ac-text-field="{{ $acTextField }}"
-                        data-ac-value-field="{{ $acValueField }}"
-                        data-ac-placeholder="{{ $acPlaceholder }}"
-                        data-ac-fill="{{ json_encode($acFill) }}"
+                        data-ac-url="{{ $acUrl }}" data-ac-text-field="{{ $acTextField }}"
+                        data-ac-value-field="{{ $acValueField }}" data-ac-placeholder="{{ $acPlaceholder }}"
+                        data-ac-fill="{{ json_encode($acFill) }}" data-ac-hidden="{{ $field['nameValue'] ?? '' }}"
                         {{ !empty($field['required']) ? 'required' : '' }}>
                         @if ($oldVal)
                             <option value="{{ $oldVal }}" selected>
@@ -180,6 +194,10 @@
                             </option>
                         @endif
                     </select>
+                    @if (!empty($field['nameValue']))
+                        <input type="hidden" name="{{ $field['nameValue'] }}" id="{{ $field['nameValue'] }}"
+                            value="{{ $hiddenVal }}">
+                    @endif
                     @error($field['name'])
                         <span class="invalid-feedback">{{ $message }}</span>
                     @enderror
@@ -193,8 +211,8 @@
                         @endif
                     </label>
                     <textarea name="{{ $field['name'] }}" id="{{ $field['name'] }}"
-                        class="form-control @error($field['name']) is-invalid @enderror"
-                        placeholder="{{ $field['placeholder'] }}" {{ !empty($field['required']) ? 'required' : '' }}>{{ $oldVal }}</textarea>
+                        class="form-control @error($field['name']) is-invalid @enderror" placeholder="{{ $field['placeholder'] }}"
+                        {{ !empty($field['required']) ? 'required' : '' }}>{{ $oldVal }}</textarea>
                     @error($field['name'])
                         <span class="invalid-feedback">{{ $message }}</span>
                     @enderror
@@ -204,9 +222,9 @@
     </div>
 
     @if (($showSubmit ?? true) !== false)
-    <button type="submit" class="btn btn-primary">
-        <i class="fas fa-save"></i> {{ $submitLabel ?? ($isEdit ? 'Update' : 'Simpan') }}
-    </button>
+        <button type="submit" class="btn btn-primary">
+            <i class="fas fa-save"></i> {{ $submitLabel ?? ($isEdit ? 'Update' : 'Simpan') }}
+        </button>
     @endif
 
     @if (($showCancel ?? null) !== false)
@@ -218,139 +236,165 @@
     @endif
 </form>
 
-@if($hasAutocomplete)
+@if ($hasAutocomplete)
     @once
         @push('scripts')
-        <script>
-            document.addEventListener('DOMContentLoaded', function () {
-                const acSelects = [];
+            <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                    const acSelects = [];
 
-                /**
-                 * Batasi tinggi dropdown autocomplete agar tidak melewati footer.
-                 * Dihitung dinamis dari posisi daftar hasil terhadap footer/viewport,
-                 * sehingga otomatis menyesuaikan saat window di-resize.
-                 * (Fungsi pencarian, AJAX, dan struktur hasil TIDAK diubah.)
-                 */
-                function constrainSelect2Dropdown($select) {
-                    const data = $select.data('select2');
-                    if (!data) return;
+                    /**
+                     * Batasi tinggi dropdown autocomplete agar tidak melewati footer.
+                     * Dihitung dinamis dari posisi daftar hasil terhadap footer/viewport,
+                     * sehingga otomatis menyesuaikan saat window di-resize.
+                     * (Fungsi pencarian, AJAX, dan struktur hasil TIDAK diubah.)
+                     */
+                    function constrainSelect2Dropdown($select) {
+                        const data = $select.data('select2');
+                        if (!data) return;
 
-                    const $dropdown = data.dropdown.$dropdown;
-                    if (!$dropdown || !$dropdown.is(':visible')) return;
+                        const $dropdown = data.dropdown.$dropdown;
+                        if (!$dropdown || !$dropdown.is(':visible')) return;
 
-                    const $results = $dropdown.find('.select2-results__options');
-                    if (!$results.length) return;
+                        const $results = $dropdown.find('.select2-results__options');
+                        if (!$results.length) return;
 
-                    // Batas bawah yang tidak boleh dilewati:
-                    // posisi atas footer, atau dasar viewport bila footer belum terlihat
-                    let limitBottom = window.innerHeight;
-                    const $footer = $('footer').first();
-                    if ($footer.length) {
-                        limitBottom = Math.min(limitBottom, $footer[0].getBoundingClientRect().top);
+                        // Batas bawah yang tidak boleh dilewati:
+                        // posisi atas footer, atau dasar viewport bila footer belum terlihat
+                        let limitBottom = window.innerHeight;
+                        const $footer = $('footer').first();
+                        if ($footer.length) {
+                            limitBottom = Math.min(limitBottom, $footer[0].getBoundingClientRect().top);
+                        }
+
+                        // Sisa ruang dari atas daftar hasil sampai batas bawah
+                        // (dikurangi jarak aman 12px di atas footer)
+                        const gap = 12;
+                        const resultsTop = $results[0].getBoundingClientRect().top;
+                        const available = Math.max(0, Math.floor(limitBottom - gap - resultsTop));
+
+                        // max-height hanya membatasi: bila hasil sedikit dan lebih
+                        // pendek dari nilai ini, dropdown tetap tampil utuh seperti biasa
+                        $results.css({
+                            'max-height': available + 'px',
+                            'overflow-y': 'auto'
+                        });
                     }
 
-                    // Sisa ruang dari atas daftar hasil sampai batas bawah
-                    // (dikurangi jarak aman 12px di atas footer)
-                    const gap = 12;
-                    const resultsTop = $results[0].getBoundingClientRect().top;
-                    const available = Math.max(0, Math.floor(limitBottom - gap - resultsTop));
+                    document.querySelectorAll('.autocomplete-select').forEach(function(el) {
+                        const url = el.dataset.acUrl;
+                        const textField = el.dataset.acTextField || 'name';
+                        const valueField = el.dataset.acValueField || 'id';
+                        const placeholder = el.dataset.acPlaceholder || '-- Cari dan pilih --';
+                        const fill = el.dataset.acFill ? JSON.parse(el.dataset.acFill) : {};
+                        const $select = $(el);
+                        const hiddenFieldName = el.dataset.acHidden || null;
 
-                    // max-height hanya membatasi: bila hasil sedikit dan lebih
-                    // pendek dari nilai ini, dropdown tetap tampil utuh seperti biasa
-                    $results.css({
-                        'max-height': available + 'px',
-                        'overflow-y': 'auto'
-                    });
-                }
-
-                document.querySelectorAll('.autocomplete-select').forEach(function (el) {
-                    const url = el.dataset.acUrl;
-                    const textField = el.dataset.acTextField || 'name';
-                    const valueField = el.dataset.acValueField || 'id';
-                    const placeholder = el.dataset.acPlaceholder || '-- Cari dan pilih --';
-                    const fill = el.dataset.acFill ? JSON.parse(el.dataset.acFill) : {};
-                    const $select = $(el);
-
-                    $select.select2({
-                        theme: 'bootstrap4',
-                        placeholder: placeholder,
-                        allowClear: true,
-                        width: '100%',
-                        closeOnSelect: true,
-                        dropdownCssClass: 'select2-dropdown-custom',
-                        ajax: {
-                            url: url,
-                            dataType: 'json',
-                            delay: 300,
-                            data: function (params) {
-                                return { search: params.term || '', ...fill };
+                        $select.select2({
+                            theme: 'bootstrap4',
+                            placeholder: placeholder,
+                            allowClear: true,
+                            width: '100%',
+                            closeOnSelect: true,
+                            dropdownCssClass: 'select2-dropdown-custom',
+                            ajax: {
+                                url: url,
+                                dataType: 'json',
+                                delay: 300,
+                                data: function(params) {
+                                    return {
+                                        search: params.term || '',
+                                        ...fill
+                                    };
+                                },
+                                processResults: function(data) {
+                                    const results = Array.isArray(data) ? data : (data.data || data
+                                        .results || []);
+                                    return {
+                                        results: results.map(function(item) {
+                                            // Object.assign: semua field ekstra dari API
+                                            // ikut diteruskan (mis. msaKode, msaNama, a, b, ...),
+                                            // sementara id/text ditimpa sesuai konfigurasi field.
+                                            return Object.assign({}, item, {
+                                                id: item[valueField],
+                                                text: item[textField]
+                                            });
+                                        })
+                                    };
+                                },
+                                cache: true
                             },
-                            processResults: function (data) {
-                                const results = Array.isArray(data) ? data : (data.data || data.results || []);
-                                return {
-                                    results: results.map(function (item) {
-                                        // Object.assign: semua field ekstra dari API
-                                        // ikut diteruskan (mis. msaKode, msaNama, a, b, ...),
-                                        // sementara id/text ditimpa sesuai konfigurasi field.
-                                        return Object.assign({}, item, {
-                                            id: item[valueField],
-                                            text: item[textField]
-                                        });
-                                    })
-                                };
+                            minimumInputLength: 0,
+                            templateResult: function(item) {
+                                if (item.loading) {
+                                    return $('<div class="select2-result-loading">' +
+                                        '<i class="fas fa-spinner fa-spin mr-2"></i>Memuat data...</div>'
+                                        );
+                                }
+                                return $('<div class="select2-result-item">' +
+                                    '<i class="fas fa-tag mr-2 text-muted"></i>' +
+                                    $('<span>').text(item.text).html() +
+                                    '</div>');
                             },
-                            cache: true
-                        },
-                        minimumInputLength: 0,
-                        templateResult: function (item) {
-                            if (item.loading) {
-                                return $('<div class="select2-result-loading">' +
-                                    '<i class="fas fa-spinner fa-spin mr-2"></i>Memuat data...</div>');
+                            templateSelection: function(item) {
+                                if (!item.id) {
+                                    return $('<span class="text-muted">' + placeholder + '</span>');
+                                }
+                                return $('<span class="select2-selection-text">' +
+                                    '<i class="fas fa-check-circle mr-1 text-success"></i>' + item
+                                    .text +
+                                    '</span>');
+                            },
+                            language: {
+                                searching: function() {
+                                    return 'Mencari...';
+                                },
+                                noResults: function() {
+                                    return '⛔ Data tidak ditemukan';
+                                },
+                                errorLoading: function() {
+                                    return 'Gagal memuat data';
+                                }
                             }
-                            return $('<div class="select2-result-item">' +
-                                '<i class="fas fa-tag mr-2 text-muted"></i>' +
-                                $('<span>').text(item.text).html() +
-                                '</div>');
-                        },
-                        templateSelection: function (item) {
-                            if (!item.id) {
-                                return $('<span class="text-muted">' + placeholder + '</span>');
-                            }
-                            return $('<span class="select2-selection-text">' +
-                                '<i class="fas fa-check-circle mr-1 text-success"></i>' + item.text +
-                                '</span>');
-                        },
-                        language: {
-                            searching: function () { return 'Mencari...'; },
-                            noResults: function () { return '⛔ Data tidak ditemukan'; },
-                            errorLoading: function () { return 'Gagal memuat data'; }
+                        });
+
+                        // Batasi tinggi dropdown + auto-fokus search saat dropdown terbuka
+                        $select.on('select2:open', function() {
+                            setTimeout(function() {
+                                constrainSelect2Dropdown($select);
+                            }, 0);
+
+                            // Auto-fokus ke search input
+                            setTimeout(function() {
+                                document.querySelector('.select2-search__field').focus();
+                            }, 100);
+                        });
+
+                        if (hiddenFieldName) {
+                            // Update field tersembunyi saat item dipilih
+                            $select.on('select2:select', function(e) {
+                                const item = e.params.data;
+
+                                $('#' + hiddenFieldName).val(item.hiddenValue ?? '');
+                            });
+
+                            // Kosongkan field tersembunyi saat item dibersihkan
+                            $select.on('select2:clear', function() {
+                                $('#' + hiddenFieldName).val('');
+                            });
                         }
+                        acSelects.push($select);
                     });
 
-                    // Batasi tinggi dropdown + auto-fokus search saat dropdown terbuka
-                    $select.on('select2:open', function () {
-                        setTimeout(function () {
+                    // Hitung ulang batas tinggi bila ukuran window berubah
+                    // saat dropdown masih terbuka
+                    $(window).on('resize', function() {
+                        acSelects.forEach(function($select) {
                             constrainSelect2Dropdown($select);
-                        }, 0);
-
-                        // Auto-fokus ke search input
-                        setTimeout(function () {
-                            document.querySelector('.select2-search__field').focus();
-                        }, 100);
-                    });
-
-                    acSelects.push($select);
-                });
-
-                // Hitung ulang batas tinggi bila ukuran window berubah
-                // saat dropdown masih terbuka
-                $(window).on('resize', function () {
-                    acSelects.forEach(function ($select) {
-                        constrainSelect2Dropdown($select);
+                        });
                     });
                 });
-            });
-        </script>
+            </script>
         @endpush
     @endonce
 @endif

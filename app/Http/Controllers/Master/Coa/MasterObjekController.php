@@ -167,7 +167,8 @@ class MasterObjekController extends BaseController
         return response()->json($data->map(function ($item) {
             return [
                 'id' => $item->msoKode,
-                'text' => $item->msoKode . ' - ' . $item->msoNama
+                'text' => $item->msoKode . ' - ' . $item->msoNama,
+                'hiddenValue' => $item->msoNama,
             ];
         }));
     }
