@@ -7,6 +7,7 @@ use App\Models\Pinjaman\PengajuanPinjaman;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
+use Illuminate\Support\Facades\DB;
 
 class PengajuanPinjamanController extends BaseController
 {
@@ -18,11 +19,6 @@ class PengajuanPinjamanController extends BaseController
         $this->primaryKey = 'tpId';
         $this->table = 'tr_pengajuan';
         $this->searchColumn = ['tpKode', 'tpAnggotaNama', 'tpJJaminanNama', 'tpStatus'];
-
-        $this->status = [
-            ['value' => 'Active', 'name' => 'Active'],
-            ['value' => 'Inactive', 'name' => 'Inactive'],
-        ];
 
         $this->form = [
             [
@@ -88,7 +84,7 @@ class PengajuanPinjamanController extends BaseController
                 'label' => 'Jumlah Pinjam',
                 'placeholder' => 'Masukkan jumlah pinjam',
                 'type' => 'angka',
-                'col' => 'col-md-6',
+                'col' => 'col-md-12',
                 'required' => true,
             ],
             [
@@ -114,15 +110,6 @@ class PengajuanPinjamanController extends BaseController
                 'type' => 'textarea',
                 'col' => 'col-md-12',
                 'required' => false,
-            ],
-            [
-                'name' => 'tpStatus',
-                'label' => 'Status',
-                'placeholder' => '-- Pilih status --',
-                'type' => 'select',
-                'col' => 'col-md-12',
-                'required' => true,
-                'options' => $this->status
             ]
         ];
 
@@ -131,7 +118,7 @@ class PengajuanPinjamanController extends BaseController
                 [
                     'label' => 'Tanggal',
                     'field' => 'tpTanggalPinjam',
-                    'type' => 'text'
+                    'type' => 'date'
                 ],
                 [
                     'label' => 'Nama Peminjam',
@@ -141,12 +128,12 @@ class PengajuanPinjamanController extends BaseController
                 [
                     'label' => 'Jumlah Pinjam',
                     'field' => 'tpJumlahPinjam',
-                    'type' => 'text'
+                    'type' => 'angka'
                 ],
                 [
                     'label' => 'Bunga (%)',
                     'field' => 'tpBunga',
-                    'type' => 'text'
+                    'type' => 'angka'
                 ],
                 [
                     'label' => 'Status',
@@ -160,7 +147,21 @@ class PengajuanPinjamanController extends BaseController
         $search = $request->get('search');
         $editId = $request->get('edit');
 
-        $query = $this->model::query();
+        $query = $this->model::query()->select(
+            'tpTanggalPinjam',
+            'tpAnggotaNama',
+            'tpJumlahPinjam',
+            'tpBunga',
+            $this->primaryKey,
+            DB::raw(" CASE 
+                WHEN tpStatus = '0' THEN 'Pending'
+                WHEN tpStatus = '1' THEN 'Disetujui'
+                WHEN tpStatus = '2' THEN 'Ditolak'
+                WHEN tpStatus = '3' THEN 'Dibatalkan'
+                ELSE 'Unknown'
+            END 
+            AS tpStatus")
+        );
 
         if ($search && $this->searchColumn) {
             $columns = (array) $this->searchColumn;
