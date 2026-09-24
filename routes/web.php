@@ -10,8 +10,11 @@ use App\Http\Controllers\Master\JenisPinjamanController;
 use App\Http\Controllers\Master\JenisSimpananController;
 use App\Http\Controllers\Master\MasterAnggotaController;
 use App\Http\Controllers\Master\MasterBankkasController;
+use App\Http\Controllers\Master\MasterJaminanController;
+use App\Http\Controllers\Master\MasterTujuanPinjamanController;
 use App\Http\Controllers\Master\MetodePembayaranController;
 use App\Http\Controllers\MenuController;
+use App\Http\Controllers\Pinjaman\PengajuanPinjamanController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserController;
 use App\Models\Menu;
@@ -45,8 +48,10 @@ Route::middleware(['auth', 'checkRole'])->group(function () {
     // API FOR COMBO
     Route::get('api/akun/search', [MasterAkunController::class, 'search'])->name('api.akun.search');
     Route::get('api/kelompok/search', [MasterKelompokController::class, 'search'])->name('api.kelompok.search');
-    Route::get('api/jenis/search', [MasterJenisController::class, 'search'])->name('api.jenis.search');
     Route::get('api/objek/search', [MasterObjekController::class, 'search'])->name('api.objek.search');
+    Route::get('api/tujuan-pinjaman/search', [MasterTujuanPinjamanController::class, 'search'])->name('api.tujuan-pinjaman.search');
+    Route::get('api/anggota/search', [MasterAnggotaController::class, 'search'])->name('api.anggota.search');
+    Route::get('api/jaminan/search', [MasterJaminanController::class, 'search'])->name('api.jaminan.search');
 
     // MENU MANAGEMENT
     // Custom role menu routes (harus diatas resource agar tidak ditangkap {role} wildcard)
@@ -73,6 +78,10 @@ Route::middleware(['auth', 'checkRole'])->group(function () {
     Route::resource('ms-metode-bayar', MetodePembayaranController::class);
 
     Route::resource('ms-bank-kas', MasterBankkasController::class);
+    Route::resource('ms-jaminan', MasterJaminanController::class);
+    Route::resource('ms-tujuan-pinjaman', MasterTujuanPinjamanController::class);
+
+    Route::resource('pengajuan-pinjaman', PengajuanPinjamanController::class);
 });
 
 // Redirect root to login or dashboard

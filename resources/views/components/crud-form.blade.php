@@ -173,7 +173,12 @@
                     // Nilai field nameValue diambil dari database (nama),
                     // bukan dari value (kode). Saat pilih baru, JS akan
                     // menimpa nilai ini dengan hiddenValue dari API.
-                    $hiddenVal = old($field['nameValue'], $isEdit ? $editData->{$field['nameValue']} ?? '' : null);
+                    if (!empty($field['nameValue']) && $isEdit) {
+                        $hiddenVal = $editData->{$field['nameValue']} ?? '';
+                    } else {
+                        $hiddenVal = '';
+                    }
+                    // $hiddenVal = old($field['nameValue'], $isEdit ? $editData->{$field['nameValue']} ?? '' : null);
                 @endphp
                 <div class="{{ $field['col'] ?? 'col-md-12' }} mb-2">
                     <label>

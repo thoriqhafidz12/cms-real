@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Master;
 
 use App\Http\Controllers\BaseController;
 use App\Models\Master\MasterAnggota;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
@@ -155,5 +156,27 @@ class MasterAnggotaController extends BaseController
         $data['maCreateBy'] = auth()->user()->name ?? '';
         $data['maUpdatedBy'] = auth()->user()->name ?? '';
         return $data;
+    }
+
+    public function search(Request $request): JsonResponse
+    {
+        $search = $request->get('search');
+        $fObjek = $request->get('fObjek', []);
+        
+        $data = $this->model::where('maNama', 'like', "%{$search}%")
+            ->orderBy('maNama')
+            ->when(!empty($fObjek), function ($query) use ($fObjek) {
+                $query->where('maJenisKode', 'LIKE', "%$fObjek%");
+            })
+            ->limit(20)
+            ->get(['maId', 'maNoIdentitas', 'maNama']);
+
+        return response()->json($data->map(function ($item) {
+            return [
+                'id' => $item->maId,
+                'text' => $item->maNoIdentitas . ' - ' . $item->maNama,
+                'hiddenValue' => $item->maNama,
+            ];
+        }));
     }
 }
