@@ -113,7 +113,8 @@ class MasterJaminanController extends BaseController
         return response()->json($data->map(function ($item) {
             return [
                 'id' => $item->msjKode, // Gunakan msjKode sebagai id
-                'text' => $item->msjKode . ' - ' . $item->msjNama
+                'text' => $item->msjKode . ' - ' . $item->msjNama,
+                'hiddenValue' => $item->msjNama,
             ];
         }));
     }

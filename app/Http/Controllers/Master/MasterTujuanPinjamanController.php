@@ -113,7 +113,8 @@ class MasterTujuanPinjamanController extends BaseController
         return response()->json($data->map(function ($item) {
             return [
                 'id' => $item->mstKode, // Gunakan mstKode sebagai id
-                'text' => $item->mstKode . ' - ' . $item->mstNama
+                'text' => $item->mstKode . ' - ' . $item->mstNama,
+                'hiddenValue' => $item->mstNama,
             ];
         }));
     }

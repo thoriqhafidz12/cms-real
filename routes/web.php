@@ -81,7 +81,9 @@ Route::middleware(['auth', 'checkRole'])->group(function () {
     Route::resource('ms-jaminan', MasterJaminanController::class);
     Route::resource('ms-tujuan-pinjaman', MasterTujuanPinjamanController::class);
 
+    // PINJAMAN
     Route::resource('pengajuan-pinjaman', PengajuanPinjamanController::class);
+    Route::put('pengajuan-pinjaman/{id}/persetujuan', [PengajuanPinjamanController::class, 'persetujuan'])->name('pengajuan-pinjaman.persetujuan');
 });
 
 // Redirect root to login or dashboard

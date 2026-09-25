@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Model;
 
-#[Fillable(['tpId', 'tpKode', 'tpAnggotaId', 'tpAnggotaNama', 'tpTanggalPinjam', 'tpJaminanId', 'tpJJaminanNama','tpTujuanId','tpTujuanNama', 'tpJumlahPinjam', 'tpJumlahAngsuran', 'tpJumlahAngsuranBulan', 'tpBunga', 'tpTotalPinjam', 'tpStatus', 'tpKeterangan', 'tpCreatedBy', 'tpUpdatedBy', 'tpDeletedBy'])]
+#[Fillable(['tpId', 'tpKode', 'tpAnggotaId', 'tpAnggotaNama', 'tpTanggalPinjam', 'tpJaminanId', 'tpJaminanNama','tpTujuanId','tpTujuanNama', 'tpJumlahPinjam', 'tpJumlahAngsuran', 'tpJumlahAngsuranBulan', 'tpBunga', 'tpNilaiDisetuji', 'tpTenorDisetuji', 'tpStatus', 'tpKeterangan', 'tpCreatedBy', 'tpUpdatedBy', 'tpDeletedBy'])]
 #[Table('tr_pengajuan')]
 class PengajuanPinjaman extends Model
 {

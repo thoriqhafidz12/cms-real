@@ -5,12 +5,16 @@ namespace App\Http\Controllers\Pinjaman;
 use App\Http\Controllers\BaseController;
 use App\Models\Pinjaman\PengajuanPinjaman;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 use Illuminate\Support\Facades\DB;
 
 class PengajuanPinjamanController extends BaseController
 {
+    protected array $formPersetujuan = [];
+    protected array $gridPersetujuan = [];
+
     public function __construct()
     {
         $this->model = PengajuanPinjaman::class;
@@ -20,6 +24,7 @@ class PengajuanPinjamanController extends BaseController
         $this->table = 'tr_pengajuan';
         $this->searchColumn = ['tpKode', 'tpAnggotaNama', 'tpJJaminanNama', 'tpStatus'];
 
+        // ========================== PENGAJUAN ==========================
         $this->form = [
             [
                 'name' => 'tpKode',
@@ -141,12 +146,90 @@ class PengajuanPinjamanController extends BaseController
                     'type' => 'text'
                 ]
             ];
+
+        // ========================== PERSETUJUAN ==========================
+        $this->formPersetujuan = [
+            [
+                'name' => 'tpTenorDisetuji',
+                'label' => 'Tenor Disetujui',
+                'placeholder' => 'Masukkan tenor pinjaman yang disetujui',
+                'type' => 'number',
+                'col' => 'col-md-12',
+                'required' => true,
+                'readonly' => false,
+            ],
+            [
+                'name' => 'tpNilaiDisetuji',
+                'label' => 'Nilai Disetujui',
+                'placeholder' => 'Masukkan nilai pinjaman yang disetujui',
+                'type' => 'angka',
+                'col' => 'col-md-12',
+                'required' => true,
+                'readonly' => false,
+            ],
+            [
+                'name' => 'tpStatus',
+                'label' => 'Status Persetujuan',
+                'placeholder' => '-- Pilih status persetujuan --',
+                'type' => 'select',
+                'col' => 'col-md-12',
+                'required' => true,
+                'options' => [
+                    ['value' => '0', 'label' => 'Pending'],
+                    ['value' => '1', 'label' => 'Disetujui'],
+                    ['value' => '2', 'label' => 'Ditolak']
+                ],
+            ],
+            [
+                'name' => 'tpKeterangan',
+                'label' => 'Keterangan Persetujuan',
+                'placeholder' => 'Masukkan catatan persetujuan (opsional)',
+                'type' => 'textarea',
+                'col' => 'col-md-12',
+                'required' => false,
+            ]
+        ];
+
+        $this->gridPersetujuan =
+            [
+                [
+                    'label' => 'Tanggal',
+                    'field' => 'tpTanggalPinjam',
+                    'type' => 'date'
+                ],
+                [
+                    'label' => 'Kode Pengajuan',
+                    'field' => 'tpKode',
+                    'type' => 'text'
+                ],
+                [
+                    'label' => 'Nama Peminjam',
+                    'field' => 'tpAnggotaNama',
+                    'type' => 'text'
+                ],
+                [
+                    'label' => 'Jaminan',
+                    'field' => 'tpJaminanNama',
+                    'type' => 'text'
+                ],
+                [
+                    'label' => 'Pengajuan Pinjam',
+                    'field' => 'tpJumlahPinjam',
+                    'type' => 'rupiah'
+                ],
+                [
+                    'label' => 'Bunga (%)',
+                    'field' => 'tpBunga',
+                    'type' => 'angka'
+                ]
+            ];
     }
     public function index(Request $request): View
     {
         $search = $request->get('search');
         $editId = $request->get('edit');
 
+        // ========================== PENGAJUAN ==========================
         $query = $this->model::query()->select(
             'tpTanggalPinjam',
             'tpAnggotaNama',
@@ -181,12 +264,41 @@ class PengajuanPinjamanController extends BaseController
             $editData = $this->model::where($this->primaryKey, $editId)->first();
         }
 
+        // ========================== PERSETUJUAN ==========================
+        $countPersetujuan = 0;
+        $searchPersetujuan = $request->get('search_persetujuan');
+        $setujuiId = $request->get('setujui');
+
+        // $queryPersetujuan = $this->model::query()->where('tpStatus', '0');
+        $queryPersetujuan = $this->model::query();
+        $countPersetujuan = (clone $queryPersetujuan)
+            ->where('tpStatus', 0)
+            ->count();
+
+        if ($searchPersetujuan && $this->searchColumn) {
+            $columns = (array) $this->searchColumn;
+            $queryPersetujuan->where(function ($q) use ($columns, $searchPersetujuan) {
+                foreach ($columns as $col) {
+                    $q->orWhere($col, 'like', "%{$searchPersetujuan}%");
+                }
+            });
+        }
+
+        $itemsPersetujuan = $queryPersetujuan->orderBy($this->primaryKey, 'desc')
+            ->paginate(10)
+            ->withQueryString();
+
+        $dataPersetujuan = null;
+        if ($setujuiId) {
+            $dataPersetujuan = $this->model::where($this->primaryKey, $setujuiId)->first();
+        }
+
         $extra = [];
         foreach ($this->extraViewData as $key => $resolver) {
             $extra[$key] = is_callable($resolver) ? $resolver() : $resolver;
         }
 
-        return view('master', array_merge([
+        return view('pinjaman.index', array_merge([
             'items' => $items,
             'search' => $search,
             'editData' => $editData,
@@ -195,6 +307,40 @@ class PengajuanPinjamanController extends BaseController
             'primaryKey' => $this->primaryKey,
             'titlePage' => $this->titlePage,
             'grid' => $this->grid,
+            // ========================== PERSETUJUAN ==========================
+            'itemsPersetujuan' => $itemsPersetujuan,
+            'searchPersetujuan' => $searchPersetujuan,
+            'dataPersetujuan' => $dataPersetujuan,
+            'formPersetujuan' => $this->formPersetujuan,
+            'gridPersetujuan' => $this->gridPersetujuan,
+            'countPersetujuan' => $countPersetujuan,
         ], $extra));
+    }
+
+    public function persetujuan(Request $request, string $id): RedirectResponse
+    {
+        $record = $this->model::where($this->primaryKey, $id)->firstOrFail();
+
+        $validated = $request->validate([
+            'tpTenorDisetuji' => 'required|integer|min:1',
+            'tpNilaiDisetuji' => 'required|numeric|min:0',
+            'tpStatus' => 'required|in:0,1,2',
+            'tpKeterangan' => 'nullable|string|max:225',
+        ]);
+
+        $record->update([
+            'tpTenorDisetuji' => $validated['tpTenorDisetuji'],
+            'tpNilaiDisetuji' => $validated['tpNilaiDisetuji'],
+            'tpStatus' => $validated['tpStatus'],
+            'tpKeterangan' => $validated['tpKeterangan'] ?? $record->tpKeterangan,
+            $this->model::UPDATED_BY => auth()->user()->name,
+            $this->model::UPDATED_AT => now(),
+        ]);
+
+        $label = $validated['tpStatus'] == '1' ? 'disetujui' : 'ditolak';
+
+        return redirect()
+            ->route($this->route . '.index')
+            ->with('success', 'Pengajuan ' . $record->tpKode . ' berhasil ' . $label . '.');
     }
 }
