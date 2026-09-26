@@ -187,4 +187,22 @@ class MetodePembayaranController extends BaseController
             'grid' => $this->grid,
         ], $extra));
     }
+
+    public function search(Request $request): JsonResponse
+    {
+        $search = $request->get('search');
+
+        $data = $this->model::where('mmNama', 'like', "%{$search}%")
+            ->orderBy('mmKode')
+            ->limit(20)
+            ->get(['mmId', 'mmKode', 'mmNama']);
+
+        return response()->json($data->map(function ($item) {
+            return [
+                'id' => $item->mmId,
+                'text' => $item->mmId . ' - ' . $item->mmNama,
+                'hiddenValue' => $item->mmNama,
+            ];
+        }));
+    }
 }

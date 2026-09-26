@@ -403,4 +403,15 @@ abstract class BaseController extends Controller
         }
         return $res;
     }
+
+    function formatRupiah($angka, $digit = 2)
+    {
+        if (empty($angka)) {
+            $angka = 0;
+        }else{
+            $angka = str_replace(',', '', $angka);
+        }
+        $hasil_rupiah = number_format($angka, $digit, ',', '.');
+        return $hasil_rupiah;
+    }
 }

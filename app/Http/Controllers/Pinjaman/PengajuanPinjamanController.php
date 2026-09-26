@@ -298,7 +298,7 @@ class PengajuanPinjamanController extends BaseController
             $extra[$key] = is_callable($resolver) ? $resolver() : $resolver;
         }
 
-        return view('pinjaman.index', array_merge([
+        return view('pinjaman.pengajuan', array_merge([
             'items' => $items,
             'search' => $search,
             'editData' => $editData,
@@ -317,6 +317,7 @@ class PengajuanPinjamanController extends BaseController
         ], $extra));
     }
 
+    // PERSETUJUAN
     public function persetujuan(Request $request, string $id): RedirectResponse
     {
         $record = $this->model::where($this->primaryKey, $id)->firstOrFail();

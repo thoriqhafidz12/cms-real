@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\Combo\PengajuanforcomboController;
 use App\Http\Controllers\GantiPassController;
 use App\Http\Controllers\Master\Coa\MasterAkunController;
 use App\Http\Controllers\Master\Coa\MasterJenisController;
@@ -14,6 +15,7 @@ use App\Http\Controllers\Master\MasterJaminanController;
 use App\Http\Controllers\Master\MasterTujuanPinjamanController;
 use App\Http\Controllers\Master\MetodePembayaranController;
 use App\Http\Controllers\MenuController;
+use App\Http\Controllers\Pinjaman\PencairanPinjamanController;
 use App\Http\Controllers\Pinjaman\PengajuanPinjamanController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserController;
@@ -52,6 +54,8 @@ Route::middleware(['auth', 'checkRole'])->group(function () {
     Route::get('api/tujuan-pinjaman/search', [MasterTujuanPinjamanController::class, 'search'])->name('api.tujuan-pinjaman.search');
     Route::get('api/anggota/search', [MasterAnggotaController::class, 'search'])->name('api.anggota.search');
     Route::get('api/jaminan/search', [MasterJaminanController::class, 'search'])->name('api.jaminan.search');
+    Route::get('api/metode-pembayaran/search', [MetodePembayaranController::class, 'search'])->name('api.metode-pembayaran.search');
+    Route::get('api/pengajuan-pinjaman/search', [PengajuanforcomboController::class, 'index'])->name('api.pengajuan-pinjaman.search');
 
     // MENU MANAGEMENT
     // Custom role menu routes (harus diatas resource agar tidak ditangkap {role} wildcard)
@@ -75,7 +79,7 @@ Route::middleware(['auth', 'checkRole'])->group(function () {
     Route::resource('ms-kelompok', MasterKelompokController::class);
     Route::resource('ms-jenis', MasterJenisController::class);
     Route::resource('ms-objek', MasterObjekController::class);
-    Route::resource('ms-metode-bayar', MetodePembayaranController::class);
+    Route::resource('ms-metode-bayar',  MetodePembayaranController::class);
 
     Route::resource('ms-bank-kas', MasterBankkasController::class);
     Route::resource('ms-jaminan', MasterJaminanController::class);
@@ -84,6 +88,8 @@ Route::middleware(['auth', 'checkRole'])->group(function () {
     // PINJAMAN
     Route::resource('pengajuan-pinjaman', PengajuanPinjamanController::class);
     Route::put('pengajuan-pinjaman/{id}/persetujuan', [PengajuanPinjamanController::class, 'persetujuan'])->name('pengajuan-pinjaman.persetujuan');
+    // PENCAIRAN
+    Route::resource('pencairan-pinjaman', PencairanPinjamanController::class);
 });
 
 // Redirect root to login or dashboard
