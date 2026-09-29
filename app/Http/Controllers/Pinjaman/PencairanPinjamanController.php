@@ -3,10 +3,13 @@
 namespace App\Http\Controllers\Pinjaman;
 
 use App\Http\Controllers\BaseController;
+use App\Models\Jurnal\Pengeluaran;
+use App\Models\Pinjaman\JadwalAngsuran;
 use App\Models\Pinjaman\PengajuanPinjaman;
 use App\Models\Pinjaman\Pinjaman;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
 class PencairanPinjamanController extends BaseController
@@ -126,14 +129,14 @@ class PencairanPinjamanController extends BaseController
                     'valueField' => 'id',
                 ]
             ],
-            [
-                'name' => 'trpBiayaAdmin',
-                'label' => 'Biaya Admin',
-                'placeholder' => '0 jika tidak ada biaya admin',
-                'type' => 'angka',
-                'col' => 'col-md-4',
-                'required' => true,
-            ],
+            // [
+            //     'name' => 'trpBiayaAdmin',
+            //     'label' => 'Biaya Admin',
+            //     'placeholder' => '0 jika tidak ada biaya admin',
+            //     'type' => 'angka',
+            //     'col' => 'col-md-4',
+            //     'required' => true,
+            // ],
             [
                 'name' => 'trpKeterangan',
                 'label' => 'Keterangan Pencairan',
@@ -244,6 +247,23 @@ class PencairanPinjamanController extends BaseController
     }
     protected function beforeSave(array $data, $id = null): array
     {
+        return $this->hitungCicilan($data);
+    }
+
+    protected function beforeUpdate(array $data, $record): array
+    {
+        // Hidden field nominal/tenor/bunga ikut dikirim saat edit, tapi
+        // tetap pakai nilai lama sebagai fallback kalau kosong.
+        $data['trpNominalPinjaman'] = $data['trpNominalPinjaman'] ?? $record->trpNominalPinjaman;
+        $data['trpTenor'] = $data['trpTenor'] ?? $record->trpTenor;
+        $data['trpBunga'] = $data['trpBunga'] ?? $record->trpBunga;
+
+        return $this->hitungCicilan($data);
+    }
+
+    /** Hitung cicilan pokok/bunga/total dari nominal, tenor, dan bunga. */
+    protected function hitungCicilan(array $data): array
+    {
         $nominal = (float) $data['trpNominalPinjaman'];
         $tenor = (int) $data['trpTenor'];
         $bunga = (float) $data['trpBunga'];
@@ -257,6 +277,7 @@ class PencairanPinjamanController extends BaseController
 
         return $data;
     }
+
     protected function afterSave(array $data): void
     {
         $pengajuanId = $data['trpPengajuanId'];
@@ -265,7 +286,39 @@ class PencairanPinjamanController extends BaseController
             $pengajuan->tpStatus = 4; // Assuming 4 represents "cair" status
             $pengajuan->save();
         }
+
+        $this->generateJadwalAngsuran((object) $data);
+
+        $this->createPengeluaranRecord($data);
     }
+
+    /**
+     * Saat pencairan diupdate: perbarui kas keluar + jurnal, lalu regenerate
+     * jadwal angsuran (hanya jika belum ada angsuran yang dibayar).
+     */
+    protected function afterUpdate(array $data, $id): void
+    {
+        $detail = $this->getPengeluaranBySumber('PINJAMAN', $id);
+
+        if ($detail) {
+            // Nomor dokumen (kNo) tidak diubah karena sudah terbit.
+            $detail->update([
+                'kNilai' => $data['trpNominalPinjaman'],
+                'kTgl' => $data['trpTanggalCair'],
+                'kKeterangan' => 'Pencairan Pinjaman untuk ' . $data['trpAnggotaNama'],
+                'kPenagihan' => $data['trpAnggotaNama'],
+            ]);
+
+            // createJurnal otomatis delete + insert ulang, jadi jurnal selalu sinkron.
+            $this->createJurnal('PENGELUARAN', $detail->kCoa, $detail);
+        } else {
+            // Data lama belum punya record kas → buat baru.
+            $this->createPengeluaranRecord($data);
+        }
+
+        $this->regenerateJadwalAngsuran($data);
+    }
+
     protected function beforeDelete($id): void
     {
         $pinjamanId = $id;
@@ -274,5 +327,90 @@ class PencairanPinjamanController extends BaseController
             PengajuanPinjaman::where('tpId', $pengajuan->trpPengajuanId)->update(['tpStatus' => 1]);
             $pengajuan->save();
         }
+    }
+
+    /** Bersihkan data anak setelah pinjaman terhapus. */
+    protected function afterDelete($id): void
+    {
+        JadwalAngsuran::where('tjaPinjamanId', $id)->delete();
+
+        $this->hapusPengeluaranBySumber('PINJAMAN', $id);
+    }
+
+    /**
+     * Regenerate jadwal angsuran setelah update. Jika sudah ada angsuran
+     * yang dibayar, jadwal tidak diubah agar riwayat pembayaran tidak rusak.
+     */
+    private function regenerateJadwalAngsuran(array $data): void
+    {
+        $sudahDibayar = JadwalAngsuran::where('tjaPinjamanId', $data['trpjId'])
+            ->where('tjaStatus', '!=', '0')
+            ->exists();
+
+        if ($sudahDibayar) {
+            return;
+        }
+
+        JadwalAngsuran::where('tjaPinjamanId', $data['trpjId'])->delete();
+        $this->generateJadwalAngsuran((object) $data);
+    }
+
+    public function generateJadwalAngsuran($pinjaman): void
+    {
+        DB::transaction(function () use ($pinjaman) {
+            $tenor = (int) $pinjaman->trpTenor;
+
+            if ($tenor <= 0) {
+                throw new \InvalidArgumentException(
+                    'Tenor pinjaman harus lebih dari 0.'
+                );
+            }
+
+            $tanggalDasar = now();
+
+            for ($i = 1; $i <= $tenor; $i++) {
+                $tanggalAngsuran = $tanggalDasar->copy()
+                    ->addMonthsNoOverflow($i)
+                    ->toDateString();
+
+                $jadwal = JadwalAngsuran::create([
+                    'tjaPinjamanId' => $pinjaman->trpjId,
+                    'tjaTanggalAngsuran' => $tanggalAngsuran,
+                    'tjaCicilanKe' => $i,
+                    'tjaNominalAngsuran' => $pinjaman->trpCicilanPokok,
+                    'tjaNominalBunga' => $pinjaman->trpCicilanBunga,
+                    'tjaTotalTagihan' => $pinjaman->trpTotalCicilan,
+                    'tjaSisaTagihan' => $pinjaman->trpTotalCicilan,
+                    'tjaStatus' => '0'
+                ]);
+
+                if (!$jadwal->exists) {
+                    throw new \RuntimeException(
+                        "Gagal menyimpan jadwal angsuran ke-{$i}."
+                    );
+                }
+            }
+        });
+    }
+
+    public function createPengeluaranRecord(array $data): void
+    {
+        $counterKeluar = $this->getKeluarCounter($data['trpTanggalCair']);
+
+        $detail = Pengeluaran::create([
+            'kNo' => str_pad($counterKeluar, 5, '0', STR_PAD_LEFT) . '/PENGELUARAN/' . $data['trpTanggalCair'],
+            'kNilai' => $data['trpNominalPinjaman'],
+            'kTgl' => $data['trpTanggalCair'],
+            'kKeterangan' => 'Pencairan Pinjaman untuk ' . $data['trpAnggotaNama'],
+            'kCoa' => '1.01.03.01', // PIUTANG ANGGOTA
+            'kPenagihan' => $data['trpAnggotaNama'],
+            'kStatus' => 0, // Belum Closing
+            'kTerpakai' => 0,
+            'kIdPengajuanBelanja' => null,
+            'kSumber' => 'PINJAMAN',
+            'kSumberId' => $data['trpjId'],
+        ]);
+
+        $this->createJurnal('PENGELUARAN', $detail->kCoa, $detail);
     }
 }

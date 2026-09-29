@@ -100,10 +100,10 @@
                                             </td>
                                         @endforeach
                                         <td class="text-center" data-label="Aksi">
-                                            <a href="{{ route($route . '.index', ['edit' => $item->{$primaryKey}]) }}"
+                                            {{-- <a href="{{ route($route . '.index', ['edit' => $item->{$primaryKey}]) }}"
                                                 class="btn btn-warning btn-sm">
                                                 <i class="fas fa-edit"></i>
-                                            </a>
+                                            </a> --}}
                                             <form action="{{ route($route . '.destroy', $item->{$primaryKey}) }}"
                                                 method="POST" class="d-inline form-delete">
                                                 @csrf

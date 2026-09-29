@@ -2,8 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Jurnal\Jurnal;
+use App\Models\Jurnal\Penerimaan;
 use App\Models\Jurnal\PenerimaanCounter;
+use App\Models\Jurnal\Pengeluaran;
 use App\Models\Jurnal\PengeluaranCounter;
+use App\Models\Master\Mapping\MappingPenerimaan;
+use App\Models\Master\Mapping\MappingPengeluaran;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -124,6 +129,10 @@ abstract class BaseController extends Controller
         $record->update($data);
         // $record->update($this->beforeUpdate($validated, $id));
 
+        if (method_exists($this, 'afterUpdate')) {
+            $this->afterUpdate($record->fresh()->toArray(), $record->{$this->primaryKey});
+        }
+
         return redirect()
             ->route($this->route . '.index')
             ->with('success', $this->titlePage . ' berhasil diupdate.');
@@ -142,6 +151,10 @@ abstract class BaseController extends Controller
         }
 
         $record->delete();
+
+        if (method_exists($this, 'afterDelete')) {
+            $this->afterDelete($id);
+        }
 
         return redirect()
             ->route($this->route . '.index')
@@ -318,6 +331,128 @@ abstract class BaseController extends Controller
 
             return (int) $counter->tCounter;
         }, 5);
+    }
+
+    public function getMapping($jenisMapping, $sumber)
+    {
+        if ($jenisMapping === 'PENERIMAAN') {
+            $mapping = MappingPenerimaan::where('mapKodeAsal', $sumber)->join('ms_objek', 'msoKode', '=', 'mapKodeDebet')->get();
+        } elseif ($jenisMapping === 'PENGELUARAN') {
+            $mapping = MappingPengeluaran::where('mapKodeAsal', $sumber)->join('ms_objek', 'msoKode', '=', 'mapKodeKredit')->get();
+        } else {
+            throw new \InvalidArgumentException("Jenis mapping tidak valid: {$jenisMapping}");
+        }
+
+        if (!$mapping) {
+            throw new \RuntimeException("Mapping tidak ditemukan untuk sumber: {$sumber}, jenis mapping: {$jenisMapping}");
+        }
+
+        return $mapping;
+    }
+
+    public function createJurnal($jenisMapping, $sumber, $data): void
+    {
+        $mapping = $this->getMapping($jenisMapping, $sumber);
+
+        if ($jenisMapping === 'PENERIMAAN') {
+            Jurnal::where('jHeadId', $data['pId'] ?? null)
+                ->where('jSumber', $jenisMapping)
+                ->delete();
+
+            foreach ($mapping as $map) {
+                $jurnalData = [
+                    'jHeadId' => $data['headId'] ?? null,
+                    'jNo' => $data['no'] ?? null,
+                    'jTgl' => $data['tgl'] ?? null,
+                    'jKeterangan' => $data['keterangan'] ?? null,
+                    'jRekDebetKode' => $map['mapKodeDebet'] ?? null,
+                    'jRekDebetNama' => $map['mapNamaDebet'] ?? null,
+                    'jDebetNilai' => $data['debetNilai'] ?? 0,
+                    'jRekKreditKode' => $map['mapKodeKredit'] ?? null,
+                    'jRekKreditNama' => $map['mapNamaKredit'] ?? null,
+                    'jKreditNilai' => $data['kreditNilai'] ?? 0,
+                    'jSumber' => $jenisMapping,
+                    'jStatus' => 0
+                ];
+                Jurnal::insert($jurnalData);
+            }
+        } else if ($jenisMapping === 'PENGELUARAN') {
+            Jurnal::where('jHeadId', $data['kId'] ?? null)
+                ->where('jSumber', $jenisMapping)
+                ->delete();
+
+            foreach ($mapping as $map) {
+                $jurnalData = [
+                    'jHeadId' => $data['kId'] ?? null,
+                    'jNo' => $data['kNo'] ?? null,
+                    'jTgl' => $data['kTgl'] ?? null,
+                    'jKeterangan' => $data['kKeterangan'] ?? null,
+                    'jRekDebetKode' => $map['mapKodeDebet'] ?? null,
+                    'jRekDebetNama' => $map['mapNamaDebet'] ?? null,
+                    'jDebetNilai' => $data['kNilai'] ?? 0,
+                    'jRekKreditKode' => $map['mapKodeKredit'] ?? null,
+                    'jRekKreditNama' => $map['mapNamaKredit'] ?? null,
+                    'jKreditNilai' => $data['kNilai'] ?? 0,
+                    'jSumber' => $jenisMapping,
+                    'jStatus' => 0
+                ];
+                Jurnal::insert($jurnalData);
+            }
+        } else {
+            throw new \InvalidArgumentException("Jenis mapping tidak valid: {$jenisMapping}");
+        }
+    }
+
+    /** Cari record kas keluar berdasarkan sumber transaksi. */
+    public function getPengeluaranBySumber($sumber, $sumberId)
+    {
+        return Pengeluaran::where('kSumber', $sumber)
+            ->where('kSumberId', $sumberId)
+            ->first();
+    }
+
+    /** Cari record kas masuk berdasarkan sumber transaksi. */
+    public function getPenerimaanBySumber($sumber, $sumberId)
+    {
+        return Penerimaan::where('tSumber', $sumber)
+            ->where('tSumberId', $sumberId)
+            ->first();
+    }
+
+    /** Hapus semua baris jurnal milik satu header kas. */
+    public function hapusJurnal($jenisMapping, $headId): void
+    {
+        Jurnal::where('jHeadId', $headId)
+            ->where('jSumber', $jenisMapping)
+            ->delete();
+    }
+
+    /**
+     * Hapus kas keluar beserta jurnalnya berdasarkan sumber transaksi.
+     * Counter tidak dikembalikan agar nomor dokumen tidak pernah dipakai ulang.
+     */
+    public function hapusPengeluaranBySumber($sumber, $sumberId): void
+    {
+        $detail = $this->getPengeluaranBySumber($sumber, $sumberId);
+
+        if ($detail) {
+            $this->hapusJurnal('PENGELUARAN', $detail->kId);
+            $detail->delete();
+        }
+    }
+
+    /**
+     * Hapus kas masuk beserta jurnalnya berdasarkan sumber transaksi.
+     * Counter tidak dikembalikan agar nomor dokumen tidak pernah dipakai ulang.
+     */
+    public function hapusPenerimaanBySumber($sumber, $sumberId): void
+    {
+        $detail = $this->getPenerimaanBySumber($sumber, $sumberId);
+
+        if ($detail) {
+            $this->hapusJurnal('PENERIMAAN', $detail->tId);
+            $detail->delete();
+        }
     }
 
     //  ======================== HELPER FUNCTIONS ========================
