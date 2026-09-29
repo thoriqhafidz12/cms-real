@@ -112,7 +112,7 @@ class MasterAkunController extends BaseController
     public function search(Request $request): JsonResponse
     {
         $search = $request->get('search');
-        $data = $this->model::where('msaNama', 'like', "%{$search}%")
+        $data = $this->model::where('msaNama', 'like', "%{$search}%")->orWhere('msaKode', 'like', "%{$search}%")
             ->orderBy('msaKode')
             ->limit(20)
             ->get(['msaId', 'msaKode', 'msaNama']);

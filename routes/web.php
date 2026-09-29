@@ -9,6 +9,8 @@ use App\Http\Controllers\Master\Coa\MasterKelompokController;
 use App\Http\Controllers\Master\Coa\MasterObjekController;
 use App\Http\Controllers\Master\JenisPinjamanController;
 use App\Http\Controllers\Master\JenisSimpananController;
+use App\Http\Controllers\Master\Mapping\MappingPenerimaanController;
+use App\Http\Controllers\Master\Mapping\MappingPengeluaranController;
 use App\Http\Controllers\Master\MasterAnggotaController;
 use App\Http\Controllers\Master\MasterBankkasController;
 use App\Http\Controllers\Master\MasterJaminanController;
@@ -51,6 +53,7 @@ Route::middleware(['auth', 'checkRole'])->group(function () {
     Route::get('api/akun/search', [MasterAkunController::class, 'search'])->name('api.akun.search');
     Route::get('api/kelompok/search', [MasterKelompokController::class, 'search'])->name('api.kelompok.search');
     Route::get('api/objek/search', [MasterObjekController::class, 'search'])->name('api.objek.search');
+    Route::get('api/jenis/search', [MasterJenisController::class, 'search'])->name('api.jenis.search');
     Route::get('api/tujuan-pinjaman/search', [MasterTujuanPinjamanController::class, 'search'])->name('api.tujuan-pinjaman.search');
     Route::get('api/anggota/search', [MasterAnggotaController::class, 'search'])->name('api.anggota.search');
     Route::get('api/jaminan/search', [MasterJaminanController::class, 'search'])->name('api.jaminan.search');
@@ -80,6 +83,9 @@ Route::middleware(['auth', 'checkRole'])->group(function () {
     Route::resource('ms-jenis', MasterJenisController::class);
     Route::resource('ms-objek', MasterObjekController::class);
     Route::resource('ms-metode-bayar',  MetodePembayaranController::class);
+
+    Route::resource('ms-mapping-penerimaan', MappingPenerimaanController::class);
+    Route::resource('ms-mapping-pengeluaran', MappingPengeluaranController::class);
 
     Route::resource('ms-bank-kas', MasterBankkasController::class);
     Route::resource('ms-jaminan', MasterJaminanController::class);

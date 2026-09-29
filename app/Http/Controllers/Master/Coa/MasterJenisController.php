@@ -141,7 +141,7 @@ class MasterJenisController extends BaseController
     public function search(Request $request): JsonResponse
     {
         $search = $request->get('search');
-        $data = $this->model::where('msjNama', 'like', "%{$search}%")
+        $data = $this->model::where('msjNama', 'like', "%{$search}%")->orWhere('msjKode', 'like', "%{$search}%")
             ->orderBy('msjKode')
             ->limit(20)
             ->get(['msjId', 'msjKode', 'msjNama']);

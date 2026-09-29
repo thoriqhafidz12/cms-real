@@ -92,7 +92,7 @@ class MasterObjekController extends BaseController
             [
                 [
                     'label' => 'Kode Jenis',
-                    'field' => 'msoJenisKode',
+                    'field' => 'msoKode',
                     'type' => 'text'
                 ],
                 [
@@ -156,7 +156,7 @@ class MasterObjekController extends BaseController
         $search = $request->get('search');
         $fObjek = $request->get('fObjek', []);
 
-        $data = $this->model::where('msoNama', 'like', "%{$search}%")
+        $data = $this->model::where('msoNama', 'like', "%{$search}%")->orWhere('msoKode', 'like', "%{$search}%")
             ->orderBy('msoKode')
             ->when(!empty($fObjek), function ($query) use ($fObjek) {
                 $query->where('msoJenisKode', 'LIKE', "%$fObjek%");

@@ -127,7 +127,7 @@ class MasterKelompokController extends BaseController
     public function search(Request $request): JsonResponse
     {
         $search = $request->get('search');
-        $data = $this->model::where('mskNama', 'like', "%{$search}%")
+        $data = $this->model::where('mskNama', 'like', "%{$search}%")->orWhere('mskKode', 'like', "%{$search}%")
             ->orderBy('mskKode')
             ->limit(20)
             ->get(['mskId', 'mskKode', 'mskNama']);

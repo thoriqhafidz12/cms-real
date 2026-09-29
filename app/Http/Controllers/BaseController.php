@@ -2,9 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Jurnal\PenerimaanCounter;
+use App\Models\Jurnal\PengeluaranCounter;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
 
@@ -260,6 +264,63 @@ abstract class BaseController extends Controller
         return $data;
     }
 
+    //  ======================== HELPER TRANSACTIONS ========================
+
+    public function getKeluarCounter($date = null): int
+    {
+        $year = $date ? Carbon::parse($date)->year : now()->year;
+
+        return DB::transaction(function () use ($year) {
+            // Belum ada: insert.
+            // Sudah ada: abaikan insert karena kTahun UNIQUE.
+            PengeluaranCounter::query()->insertOrIgnore([
+                'kTahun' => $year,
+                'kCounter' => 0,
+            ]);
+
+            // Proses lain yang ingin mengunci baris ini harus menunggu.
+            $counter = PengeluaranCounter::where('kTahun', $year)
+                ->lockForUpdate()
+                ->firstOrFail();
+
+            $counter->kCounter = (int) $counter->kCounter + 1;
+
+            if (!$counter->save()) {
+                throw new \RuntimeException('Gagal menyimpan counter.');
+            }
+
+            return (int) $counter->kCounter;
+        }, 5);
+    }
+
+    public function getTerimaCounter($date = null): int
+    {
+        $year = $date ? Carbon::parse($date)->year : now()->year;
+
+        return DB::transaction(function () use ($year) {
+            // Belum ada: insert.
+            // Sudah ada: abaikan insert karena tTahun UNIQUE.
+            PenerimaanCounter::query()->insertOrIgnore([
+                'tTahun' => $year,
+                'tCounter' => 0,
+            ]);
+
+            // Proses lain yang ingin mengunci baris ini harus menunggu.
+            $counter = PenerimaanCounter::where('tTahun', $year)
+                ->lockForUpdate()
+                ->firstOrFail();
+
+            $counter->tCounter = (int) $counter->tCounter + 1;
+
+            if (!$counter->save()) {
+                throw new \RuntimeException('Gagal menyimpan counter.');
+            }
+
+            return (int) $counter->tCounter;
+        }, 5);
+    }
+
+    //  ======================== HELPER FUNCTIONS ========================
     public function formatDate($date): string
     {
         $tanggal = '';
@@ -408,7 +469,7 @@ abstract class BaseController extends Controller
     {
         if (empty($angka)) {
             $angka = 0;
-        }else{
+        } else {
             $angka = str_replace(',', '', $angka);
         }
         $hasil_rupiah = number_format($angka, $digit, ',', '.');
