@@ -71,17 +71,17 @@ class MasterObjekController extends BaseController
                 'exists' => 'ms_jenis,msjKode',
             ],
             [
-                'name' => 'msoJenisKode',
-                'label' => 'Kode Jenis',
-                'placeholder' => 'Masukkan kode jenis',
+                'name' => 'msoKode',
+                'label' => 'Kode Objek',
+                'placeholder' => 'Masukkan kode objek',
                 'type' => 'text',
                 'col' => 'col-md-12',
                 'required' => true,
             ],
             [
                 'name' => 'msoNama',
-                'label' => 'Nama Jenis',
-                'placeholder' => 'Masukkan nama jenis',
+                'label' => 'Nama Objek',
+                'placeholder' => 'Masukkan nama objek',
                 'type' => 'text',
                 'col' => 'col-md-12',
                 'required' => true,
@@ -91,12 +91,12 @@ class MasterObjekController extends BaseController
         $this->grid =
             [
                 [
-                    'label' => 'Kode Jenis',
+                    'label' => 'Kode Objek',
                     'field' => 'msoKode',
                     'type' => 'text'
                 ],
                 [
-                    'label' => 'Nama Jenis',
+                    'label' => 'Nama Objek',
                     'field' => 'msoNama',
                     'type' => 'text'
                 ]

@@ -1,6 +1,8 @@
 <?php
 
+use App\Http\Controllers\Akuntansi\JurnalController;
 use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\Report\CetakJurnalController;
 use App\Http\Controllers\Combo\PengajuanforcomboController;
 use App\Http\Controllers\GantiPassController;
 use App\Http\Controllers\Master\Coa\MasterAkunController;
@@ -82,7 +84,7 @@ Route::middleware(['auth', 'checkRole'])->group(function () {
     Route::resource('ms-kelompok', MasterKelompokController::class);
     Route::resource('ms-jenis', MasterJenisController::class);
     Route::resource('ms-objek', MasterObjekController::class);
-    Route::resource('ms-metode-bayar',  MetodePembayaranController::class);
+    Route::resource('ms-metode-bayar', MetodePembayaranController::class);
 
     Route::resource('ms-mapping-penerimaan', MappingPenerimaanController::class);
     Route::resource('ms-mapping-pengeluaran', MappingPengeluaranController::class);
@@ -96,6 +98,14 @@ Route::middleware(['auth', 'checkRole'])->group(function () {
     Route::put('pengajuan-pinjaman/{id}/persetujuan', [PengajuanPinjamanController::class, 'persetujuan'])->name('pengajuan-pinjaman.persetujuan');
     // PENCAIRAN
     Route::resource('pencairan-pinjaman', PencairanPinjamanController::class);
+
+    // AKUTANSI
+    Route::get('rpt-jurnal', [JurnalController::class, 'index'])->name('rpt-jurnal.index');
+    Route::get('rpt-jurnal/load', [JurnalController::class, 'loadData'])->name('rpt-jurnal.load');
+
+    // REPORT
+    Route::get('/jurnal/cetak', [CetakJurnalController::class, 'cetak'])->name('jurnal.cetak');
+    Route::get('/jurnal/excel', [CetakJurnalController::class, 'excel'])->name('jurnal.excel');
 });
 
 // Redirect root to login or dashboard
