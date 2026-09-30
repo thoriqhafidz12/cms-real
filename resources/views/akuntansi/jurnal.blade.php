@@ -261,7 +261,7 @@
                     success: function(response) {
                         $loading.hide();
                         $btnLoad.prop('disabled', false).html(
-                            '<i class="fas fa-search mr-1"></i>Tampilkan');
+                            '<i class="fas fa-search mr-1"></i>');
                         $infoRange.text(buildInfoText());
 
                         const data = response.data || [];
@@ -322,7 +322,7 @@
                     return;
                 }
 
-                window.open('{{ route('jurnal.cetak') }}?' + $form.serialize(), '_blank');
+                window.open('{{ route($route.'.pdf') }}?' + $form.serialize(), '_blank');
             });
 
             /**
@@ -336,7 +336,7 @@
                     return;
                 }
 
-                window.open('{{ route('jurnal.excel') }}?' + $form.serialize(), '_blank');
+                window.open('{{ route($route.'.excel') }}?' + $form.serialize(), '_blank');
             });
 
             $('#btnReset').on('click', function() {

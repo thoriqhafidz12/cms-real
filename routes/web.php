@@ -102,10 +102,9 @@ Route::middleware(['auth', 'checkRole'])->group(function () {
     // AKUTANSI
     Route::get('rpt-jurnal', [JurnalController::class, 'index'])->name('rpt-jurnal.index');
     Route::get('rpt-jurnal/load', [JurnalController::class, 'loadData'])->name('rpt-jurnal.load');
+    Route::get('rpt-jurnal/pdf', [JurnalController::class, 'pdf'])->name('rpt-jurnal.pdf');
+    Route::get('rpt-jurnal/excel', [JurnalController::class, 'excel'])->name('rpt-jurnal.excel');
 
-    // REPORT
-    Route::get('/jurnal/cetak', [CetakJurnalController::class, 'cetak'])->name('jurnal.cetak');
-    Route::get('/jurnal/excel', [CetakJurnalController::class, 'excel'])->name('jurnal.excel');
 });
 
 // Redirect root to login or dashboard

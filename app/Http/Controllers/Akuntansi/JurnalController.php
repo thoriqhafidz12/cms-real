@@ -2,11 +2,14 @@
 
 namespace App\Http\Controllers\Akuntansi;
 
+use App\Exports\JurnalExport;
 use App\Http\Controllers\BaseController;
+use App\Http\Controllers\Report\CetakJurnalController;
 use App\Models\Jurnal\Jurnal;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
+use Maatwebsite\Excel\Facades\Excel;
 
 class JurnalController extends BaseController
 {
@@ -218,5 +221,35 @@ class JurnalController extends BaseController
             'tKredit' => $this->formatRupiah($tKredit),
             'saldoAkhir' => $this->formatRupiah($saldo),
         ]);
+    }
+
+    public function pdf(Request $request)
+    {
+        $cetak = new CetakJurnalController();
+        return $cetak->index($request);
+    }
+
+
+    /**
+     * Export Excel: parameter filter sama dengan cetak PDF.
+     * Layout & styling ada di App\Exports\JurnalExport.
+     */
+    public function excel(Request $request)
+    {
+        // Parameter filter dikirim dari view (jurnal.blade.php) via query string.
+        // Kosong → fallback ke periode bulan berjalan.
+        $tglAwal = $request->jTglAwal ?: date('Y-m-01');
+        $tglAkhir = $request->jTglAkhir ?: date('Y-m-t');
+
+        $data = Jurnal::select('jNo', 'jTgl', 'jRekDebetKode', 'jRekDebetNama', 'jDebetNilai', 'jRekKreditKode', 'jRekKreditNama', 'jKreditNilai', 'jKeterangan')
+            ->where('jTgl', '>=', $tglAwal)
+            ->where('jTgl', '<=', $tglAkhir)
+            ->orderBy('jTgl', 'asc')
+            ->orderBy('jId', 'asc')
+            ->get();
+        // Tanggal diformat gaya Indonesia agar tampilannya sama dengan PDF.
+        $export = new JurnalExport($data, $this->dateIDkosong($tglAwal), $this->dateIDkosong($tglAkhir));
+
+        return Excel::download($export, 'Regsiter-Jurnal.xlsx');
     }
 }

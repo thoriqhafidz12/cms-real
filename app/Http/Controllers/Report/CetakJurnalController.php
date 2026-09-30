@@ -2,12 +2,10 @@
 
 namespace App\Http\Controllers\Report;
 
-use App\Exports\JurnalExport;
 use App\Http\Controllers\BaseController;
 use App\Libraries\CustomPdf;
 use App\Models\Jurnal\Jurnal;
 use Illuminate\Http\Request;
-use Maatwebsite\Excel\Facades\Excel;
 
 class cFPDF extends CustomPdf
 {
@@ -24,7 +22,7 @@ class cFPDF extends CustomPdf
 
 class CetakJurnalController extends BaseController
 {
-    public function cetak(Request $request)
+    public function index(Request $request)
     {
         // Parameter filter dikirim dari view (jurnal.blade.php) via query string.
         // Kosong → fallback ke periode bulan berjalan.
@@ -96,28 +94,5 @@ class CetakJurnalController extends BaseController
             'Content-Type' => 'application/pdf',
             'Content-Disposition' => 'inline; filename="register-jurnal.pdf"',
         ]);
-    }
-
-    /**
-     * Export Excel: parameter filter sama dengan cetak PDF.
-     * Layout & styling ada di App\Exports\JurnalExport.
-     */
-    public function excel(Request $request)
-    {
-        // Parameter filter dikirim dari view (jurnal.blade.php) via query string.
-        // Kosong → fallback ke periode bulan berjalan.
-        $tglAwal = $request->jTglAwal ?: date('Y-m-01');
-        $tglAkhir = $request->jTglAkhir ?: date('Y-m-t');
-
-        $data = Jurnal::select('jNo', 'jTgl', 'jRekDebetKode', 'jRekDebetNama', 'jDebetNilai', 'jRekKreditKode', 'jRekKreditNama', 'jKreditNilai', 'jKeterangan')
-            ->where('jTgl', '>=', $tglAwal)
-            ->where('jTgl', '<=', $tglAkhir)
-            ->orderBy('jTgl', 'asc')
-            ->orderBy('jId', 'asc')
-            ->get();
-        // Tanggal diformat gaya Indonesia agar tampilannya sama dengan PDF.
-        $export = new JurnalExport($data, $this->dateIDkosong($tglAwal), $this->dateIDkosong($tglAkhir));
-
-        return Excel::download($export, 'Regsiter-Jurnal.xlsx');
     }
 }
