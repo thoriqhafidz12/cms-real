@@ -14,18 +14,39 @@ $(".navbar-left").animate({ left: "0px" }, 200);
 $(".bottom-slide").animate({ bottom: "0px" }, 200);
 
 /**
- * Format input angka dengan sparator ribuan (.)
- * Dipanggil via oninput="autoNumericDot(this, 'targetHiddenId')"
+ * Format input angka dengan separator ribuan (.) dan desimal koma (,)
+ * maksimal 2 digit di belakang koma.
+ * Contoh: 12231,32 -> 12.231,32
+ * Dipanggil via oninput="autoNumericDot(this, 'targetHiddenId')".
+ * Koma adalah satu-satunya pemisah desimal saat mengetik; titik selalu
+ * dianggap separator ribuan. Nilai desimal bertitik dari API (mis. 12231.32)
+ * dinormalisasi ke koma dulu sebelum memanggil fungsi ini.
  */
 function autoNumericDot(el, targetId) {
     let cursorPos = el.selectionStart;
     let oldLength = el.value.length;
+    let val = el.value;
 
-    // Hapus semua karakter selain angka
-    let val = el.value.replace(/\D/g, '');
+    let intPart = '';
+    let decPart = '';
 
-    // Format dengan sparator ribuan (.)
-    let formatted = val.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+    if (val.includes(',')) {
+        // Koma = pemisah desimal (format Indonesia)
+        const parts = val.split(',');
+        intPart = parts[0].replace(/\D/g, '');
+        decPart = parts[1].replace(/\D/g, '').slice(0, 2);
+    } else {
+        // Tanpa koma: titik hanya separator ribuan, seluruhnya integer.
+        // Dengan begitu menghapus koma saat mengedit tidak membuat sisa
+        // angka mendadak berubah menjadi desimal.
+        intPart = val.replace(/\D/g, '');
+    }
+
+    // Format bagian integer dengan separator ribuan (.)
+    let formatted = intPart.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+    if (decPart !== '' || val.includes(',')) {
+        formatted += ',' + decPart;
+    }
 
     // Koreksi posisi kursor setelah formatting
     let newLength = formatted.length;
@@ -33,8 +54,30 @@ function autoNumericDot(el, targetId) {
     el.value = formatted;
     el.selectionStart = el.selectionEnd = cursorPos + diff;
 
-    // Simpan nilai asli (angka saja) ke hidden input
-    document.getElementById(targetId).value = val;
+    // Simpan nilai mentah ke hidden input (desimal pakai titik agar
+    // bisa langsung diparse/disimpan server)
+    document.getElementById(targetId).value = intPart + (decPart !== '' ? '.' + decPart : '');
+}
+
+/**
+ * Isi field type angka (display + hidden) dari nilai item autocomplete/API.
+ * Normalisasi nilai: "12231.32" (titik desimal) -> "12231,32" agar dibaca
+ * sebagai desimal; nilai integer atau berformat koma dilewatkan apa adanya.
+ * Setelahnya memanggil autoNumericDot agar display terformat ribuan dan
+ * hidden terisi nilai mentah.
+ *
+ * Contoh: fillAngka('tppNominalBayar', item.totalTagihan)
+ *         fillAngka('tppNominalBayar', '')   // kosongkan field
+ */
+function fillAngka(fieldName, value) {
+    const rawVal = String(value ?? '');
+    const displayVal = rawVal.includes(',') ? rawVal : rawVal.replace('.', ',');
+
+    const displayEl = document.getElementById(fieldName + '_display');
+    if (!displayEl) return;
+
+    displayEl.value = displayVal;
+    autoNumericDot(displayEl, fieldName);
 }
 
 // ──────────────────────────────────────────────────

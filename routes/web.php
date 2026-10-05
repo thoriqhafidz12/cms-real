@@ -2,8 +2,9 @@
 
 use App\Http\Controllers\Akuntansi\JurnalController;
 use App\Http\Controllers\Auth\LoginController;
-use App\Http\Controllers\Report\CetakJurnalController;
+use App\Http\Controllers\Combo\JadwalangsuranforcomboController;
 use App\Http\Controllers\Combo\PengajuanforcomboController;
+use App\Http\Controllers\Combo\PinjamanforcomboController;
 use App\Http\Controllers\GantiPassController;
 use App\Http\Controllers\Master\Coa\MasterAkunController;
 use App\Http\Controllers\Master\Coa\MasterJenisController;
@@ -19,6 +20,7 @@ use App\Http\Controllers\Master\MasterJaminanController;
 use App\Http\Controllers\Master\MasterTujuanPinjamanController;
 use App\Http\Controllers\Master\MetodePembayaranController;
 use App\Http\Controllers\MenuController;
+use App\Http\Controllers\Pinjaman\PembayaranPinjamanController;
 use App\Http\Controllers\Pinjaman\PencairanPinjamanController;
 use App\Http\Controllers\Pinjaman\PengajuanPinjamanController;
 use App\Http\Controllers\RoleController;
@@ -61,6 +63,8 @@ Route::middleware(['auth', 'checkRole'])->group(function () {
     Route::get('api/jaminan/search', [MasterJaminanController::class, 'search'])->name('api.jaminan.search');
     Route::get('api/metode-pembayaran/search', [MetodePembayaranController::class, 'search'])->name('api.metode-pembayaran.search');
     Route::get('api/pengajuan-pinjaman/search', [PengajuanforcomboController::class, 'index'])->name('api.pengajuan-pinjaman.search');
+    Route::get('api/pencairan-pinjaman/search', [PinjamanforcomboController::class, 'index'])->name('api.pencairan-pinjaman.search');
+    Route::get('api/jadwal-angsuran/search', [JadwalangsuranforcomboController::class, 'index'])->name('api.jadwal-angsuran.search');
 
     // MENU MANAGEMENT
     // Custom role menu routes (harus diatas resource agar tidak ditangkap {role} wildcard)
@@ -98,6 +102,7 @@ Route::middleware(['auth', 'checkRole'])->group(function () {
     Route::put('pengajuan-pinjaman/{id}/persetujuan', [PengajuanPinjamanController::class, 'persetujuan'])->name('pengajuan-pinjaman.persetujuan');
     // PENCAIRAN
     Route::resource('pencairan-pinjaman', PencairanPinjamanController::class);
+    Route::resource('pembayaran-pinjaman', PembayaranPinjamanController::class);
 
     // AKUTANSI
     Route::get('rpt-jurnal', [JurnalController::class, 'index'])->name('rpt-jurnal.index');

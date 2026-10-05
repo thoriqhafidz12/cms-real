@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Model;
 
-#[Fillable(['trpjId', 'trpPengajuanId', 'trpAnggotaId', 'trpAnggotaNama', 'trpMetodBayarId', 'trpMetodBayarNama', 'trpNoPinjaman', 'trpTanggalCair', 'trpNominalPinjaman', 'trpTenor', 'trpBunga', 'trpBiayaAdmin', 'trpCicilanPokok', 'trpCicilanBunga', 'trpTotalCicilan', 'trpKeterangan', 'trpStatusPinjaman', 'trpCreatedUser', 'trpUpdatedUser'])]
+#[Fillable(['trpjId', 'trpPengajuanId', 'trpAnggotaId', 'trpAnggotaNama', 'trpMetodBayarId', 'trpMetodBayarNama', 'trpNoPinjaman', 'trpTanggalCair', 'trpNominalPinjaman', 'trpTenor', 'trpBunga', 'trpBiayaAdmin', 'trpCicilanPokok', 'trpCicilanBunga', 'trpTotalCicilan', 'trpSudahDibayar', 'trpSisaCicilan', 'trpKeterangan', 'trpStatusPinjaman', 'trpCreatedUser', 'trpUpdatedUser'])]
 #[Table('tr_pinjaman')]
 
 class Pinjaman extends Model

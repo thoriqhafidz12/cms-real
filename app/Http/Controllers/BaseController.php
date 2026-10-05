@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Jurnal\Jurnal;
+use App\Models\Jurnal\KwitansiCounter;
 use App\Models\Jurnal\Penerimaan;
 use App\Models\Jurnal\PenerimaanCounter;
 use App\Models\Jurnal\Pengeluaran;
@@ -86,23 +87,35 @@ abstract class BaseController extends Controller
             $this->buildValidationRules()
         );
 
-        // $res = $modelClass::create($this->beforeSave($validated, null));
-        if (method_exists($this, 'beforeSave')) {
-            $data = $this->beforeSave($validated, null);
+        try {
+            DB::transaction(function () use ($modelClass, $validated) {
+                $data = $validated;
+
+                if (method_exists($this, 'beforeSave')) {
+                    $data = $this->beforeSave($validated, null);
+                }
+
+                $data[$modelClass::CREATED_BY] = auth()->user()->name;
+                $data[$modelClass::CREATED_AT] = now();
+
+                $res = $modelClass::create($data);
+
+                if (method_exists($this, 'afterSave')) {
+                    $this->afterSave($res->toArray());
+                }
+            });
+
+            return redirect()
+                ->route($this->route . '.index')
+                ->with('success', $this->titlePage . ' berhasil ditambahkan.');
+
+        } catch (\Throwable $e) {
+            report($e);
+
+            return back()
+                ->withInput()
+                ->with('error', $this->titlePage . ' gagal ditambahkan.');
         }
-
-        $data[$modelClass::CREATED_BY] = auth()->user()->name;
-        $data[$modelClass::CREATED_AT] = now();
-
-        $res = $modelClass::create($data);
-
-        if (method_exists($this, 'afterSave')) {
-            $this->afterSave($res->toArray());
-        }
-
-        return redirect()
-            ->route($this->route . '.index')
-            ->with('success', $this->titlePage . ' berhasil ditambahkan.');
     }
 
     /**
@@ -333,6 +346,37 @@ abstract class BaseController extends Controller
         }, 5);
     }
 
+    public function getKwitansiCounter($date = null): int
+    {
+        $tanggal = $date !== null ? Carbon::parse($date) : now();
+
+        $year = $tanggal->year;
+        $bulan = $tanggal->month;
+
+        return DB::transaction(function () use ($year, $bulan) {
+            // Buat baris jika kombinasi tahun dan bulan belum tersedia.
+            KwitansiCounter::query()->insertOrIgnore([
+                'kTahun' => $year,
+                'kBulan' => $bulan,
+                'kCounter' => 0,
+            ]);
+
+            // Kunci counter untuk tahun dan bulan yang dipilih.
+            $counter = KwitansiCounter::where('kTahun', $year)
+                ->where('kBulan', $bulan)
+                ->lockForUpdate()
+                ->firstOrFail();
+
+            $counter->kCounter = (int) $counter->kCounter + 1;
+
+            if (!$counter->save()) {
+                throw new \RuntimeException('Gagal menyimpan counter.');
+            }
+
+            return (int) $counter->kCounter;
+        }, 5);
+    }
+
     public function getMapping($jenisMapping, $sumber)
     {
         if ($jenisMapping === 'PENERIMAAN') {
@@ -350,35 +394,36 @@ abstract class BaseController extends Controller
         return $mapping;
     }
 
-    public function createJurnal($jenisMapping, $sumber, $data): void
+    public function createJurnal($jenisMapping, $sumber, $data, $jns = null): void
     {
         $mapping = $this->getMapping($jenisMapping, $sumber);
 
         if ($jenisMapping === 'PENERIMAAN') {
             Jurnal::where('jHeadId', $data['pId'] ?? null)
-                ->where('jSumber', $jenisMapping)
+                ->where('jSumber', $jns)
                 ->delete();
 
             foreach ($mapping as $map) {
                 $jurnalData = [
-                    'jHeadId' => $data['headId'] ?? null,
-                    'jNo' => $data['no'] ?? null,
-                    'jTgl' => $data['tgl'] ?? null,
-                    'jKeterangan' => $data['keterangan'] ?? null,
+                    'jHeadId' => $data['tId'] ?? null,
+                    'jNo' => $data['tNoPenerimaan'] ?? null,
+                    'jTgl' => $data['tTglBayar'] ?? null,
+                    'jKeterangan' => $data['tDeskripsi'] ?? null,
                     'jRekDebetKode' => $map['mapKodeDebet'] ?? null,
                     'jRekDebetNama' => $map['mapNamaDebet'] ?? null,
-                    'jDebetNilai' => $data['debetNilai'] ?? 0,
+                    'jDebetNilai' => $data['tNilaiBayar'] ?? 0,
                     'jRekKreditKode' => $map['mapKodeKredit'] ?? null,
                     'jRekKreditNama' => $map['mapNamaKredit'] ?? null,
-                    'jKreditNilai' => $data['kreditNilai'] ?? 0,
-                    'jSumber' => $jenisMapping,
-                    'jStatus' => 0
+                    'jKreditNilai' => $data['tNilaiBayar'] ?? 0,
+                    'jSumber' => $jns,
+                    'jStatus' => 0,
+                    'created_at' => now(),
                 ];
                 Jurnal::insert($jurnalData);
             }
         } else if ($jenisMapping === 'PENGELUARAN') {
             Jurnal::where('jHeadId', $data['kId'] ?? null)
-                ->where('jSumber', $jenisMapping)
+                ->where('jSumber', $jns)
                 ->delete();
 
             foreach ($mapping as $map) {
@@ -393,8 +438,9 @@ abstract class BaseController extends Controller
                     'jRekKreditKode' => $map['mapKodeKredit'] ?? null,
                     'jRekKreditNama' => $map['mapNamaKredit'] ?? null,
                     'jKreditNilai' => $data['kNilai'] ?? 0,
-                    'jSumber' => $jenisMapping,
-                    'jStatus' => 0
+                    'jSumber' => $jns,
+                    'jStatus' => 0,
+                    'created_at' => now(),
                 ];
                 Jurnal::insert($jurnalData);
             }
@@ -436,7 +482,7 @@ abstract class BaseController extends Controller
         $detail = $this->getPengeluaranBySumber($sumber, $sumberId);
 
         if ($detail) {
-            $this->hapusJurnal('PENGELUARAN', $detail->kId);
+            $this->hapusJurnal($sumber, $detail->kId);
             $detail->delete();
         }
     }
@@ -450,7 +496,7 @@ abstract class BaseController extends Controller
         $detail = $this->getPenerimaanBySumber($sumber, $sumberId);
 
         if ($detail) {
-            $this->hapusJurnal('PENERIMAAN', $detail->tId);
+            $this->hapusJurnal($sumber, $detail->tId);
             $detail->delete();
         }
     }

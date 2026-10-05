@@ -241,6 +241,7 @@ class PengajuanPinjamanController extends BaseController
                 WHEN tpStatus = '1' THEN 'Disetujui'
                 WHEN tpStatus = '2' THEN 'Ditolak'
                 WHEN tpStatus = '3' THEN 'Dibatalkan'
+                WHEN tpStatus = '4' THEN 'Dicairkan'
                 ELSE 'Unknown'
             END 
             AS tpStatus")

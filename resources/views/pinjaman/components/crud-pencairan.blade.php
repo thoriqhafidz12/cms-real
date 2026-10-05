@@ -60,7 +60,8 @@
                 </div>
             @elseif ($field['type'] === 'angka')
                 @php
-                    $displayVal = $oldVal ? number_format((float) $oldVal, 0, ',', '.') : '';
+                    // Desimal maksimal 2 digit di belakang koma
+                    $displayVal = $oldVal !== '' && $oldVal !== null ? number_format((float) $oldVal, 2, ',', '.') : '';
                     $rawVal = $oldVal ?? '';
                 @endphp
                 <div class="{{ $field['col'] ?? 'col-md-12' }} mb-2">

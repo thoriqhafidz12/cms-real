@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Pinjaman;
 use App\Http\Controllers\BaseController;
 use App\Models\Jurnal\Pengeluaran;
 use App\Models\Pinjaman\JadwalAngsuran;
+use App\Models\Pinjaman\PembayaranPinjaman;
 use App\Models\Pinjaman\PengajuanPinjaman;
 use App\Models\Pinjaman\Pinjaman;
 use Illuminate\Http\RedirectResponse;
@@ -232,6 +233,8 @@ class PencairanPinjamanController extends BaseController
             $data = $this->beforeSave($data, null);
         }
 
+        $data['trpSudahDibayar'] = 0;
+        $data['trpSisaCicilan'] = $data['trpTotalCicilan'] * $data['trpTenor'];
         $data[$modelClass::CREATED_BY] = auth()->user()->name;
         $data[$modelClass::CREATED_AT] = now();
 
@@ -257,6 +260,8 @@ class PencairanPinjamanController extends BaseController
         $data['trpNominalPinjaman'] = $data['trpNominalPinjaman'] ?? $record->trpNominalPinjaman;
         $data['trpTenor'] = $data['trpTenor'] ?? $record->trpTenor;
         $data['trpBunga'] = $data['trpBunga'] ?? $record->trpBunga;
+        $data['trpSudahDibayar'] = 0;
+        $data['trpSisaCicilan'] = $data['trpSisaCicilan'] ?? $record->trpSisaCicilan;
 
         return $this->hitungCicilan($data);
     }
@@ -298,7 +303,7 @@ class PencairanPinjamanController extends BaseController
      */
     protected function afterUpdate(array $data, $id): void
     {
-        $detail = $this->getPengeluaranBySumber('PINJAMAN', $id);
+        $detail = $this->getPengeluaranBySumber('PENCAIRAN PINJAMAN', $id);
 
         if ($detail) {
             // Nomor dokumen (kNo) tidak diubah karena sudah terbit.
@@ -310,7 +315,7 @@ class PencairanPinjamanController extends BaseController
             ]);
 
             // createJurnal otomatis delete + insert ulang, jadi jurnal selalu sinkron.
-            $this->createJurnal('PENGELUARAN', $detail->kCoa, $detail);
+            $this->createJurnal('PENGELUARAN', $detail->kCoa, $detail, 'PENCAIRAN PINJAMAN');
         } else {
             // Data lama belum punya record kas → buat baru.
             $this->createPengeluaranRecord($data);
@@ -319,14 +324,40 @@ class PencairanPinjamanController extends BaseController
         $this->regenerateJadwalAngsuran($data);
     }
 
-    protected function beforeDelete($id): void
+    public function destroy(string $id): RedirectResponse
     {
-        $pinjamanId = $id;
-        $pengajuan = Pinjaman::find($pinjamanId);
-        if ($pengajuan) {
-            PengajuanPinjaman::where('tpId', $pengajuan->trpPengajuanId)->update(['tpStatus' => 1]);
-            $pengajuan->save();
+        $modelClass = $this->model;
+
+        $record = $modelClass::where($this->primaryKey, $id)
+            ->firstOrFail();
+
+        // Nilai default respons.
+        $redirectRoute = $this->route . '.index';
+        $messageType = 'success';
+        $message = $this->titlePage . ' berhasil dihapus.';
+
+        $adaPembayaran = PembayaranPinjaman::where('tppPinjamanId', $id)
+            ->exists();
+
+        if ($adaPembayaran) {
+            $messageType = 'error';
+            $message = 'Pinjaman sudah dibayar dan tidak dapat dihapus.';
+        } else {
+            DB::transaction(function () use ($record, $id) {
+                PengajuanPinjaman::where('tpId', $record->trpPengajuanId)
+                    ->update(['tpStatus' => 1]);
+
+                $record->delete();
+
+                if (method_exists($this, 'afterDelete')) {
+                    $this->afterDelete($id);
+                }
+            });
         }
+
+        return redirect()
+            ->route($redirectRoute)
+            ->with($messageType, $message);
     }
 
     /** Bersihkan data anak setelah pinjaman terhapus. */
@@ -334,7 +365,7 @@ class PencairanPinjamanController extends BaseController
     {
         JadwalAngsuran::where('tjaPinjamanId', $id)->delete();
 
-        $this->hapusPengeluaranBySumber('PINJAMAN', $id);
+        $this->hapusPengeluaranBySumber('PENCAIRAN PINJAMAN', $id);
     }
 
     /**
@@ -407,10 +438,10 @@ class PencairanPinjamanController extends BaseController
             'kStatus' => 0, // Belum Closing
             'kTerpakai' => 0,
             'kIdPengajuanBelanja' => null,
-            'kSumber' => 'PINJAMAN',
+            'kSumber' => 'PENCAIRAN PINJAMAN',
             'kSumberId' => $data['trpjId'],
         ]);
 
-        $this->createJurnal('PENGELUARAN', $detail->kCoa, $detail);
+        $this->createJurnal('PENGELUARAN', $detail->kCoa, $detail, 'PENCAIRAN PINJAMAN');
     }
 }

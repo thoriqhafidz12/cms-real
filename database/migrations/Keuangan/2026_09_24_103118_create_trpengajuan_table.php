@@ -26,7 +26,7 @@ return new class extends Migration {
             $table->decimal('tpBunga', 5, 2)->default(0);
             $table->decimal('tpNilaiDisetuji', 20, 2)->default(0);
             $table->integer('tpTenorDisetuji')->default(0);
-            $table->string('tpStatus', 20)->default('0')->comment('0: Pending, 1: Disetujui, 2: Ditolak, 3: Dibatalkan');
+            $table->string('tpStatus', 20)->default('0')->comment('0: Pending, 1: Disetujui, 2: Ditolak, 3: Dibatalkan, 4: Dicairkan');
             $table->text('tpKeterangan')->nullable();
 
             $table->string('tpCreatedBy', 50)->nullable();

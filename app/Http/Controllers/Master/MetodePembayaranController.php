@@ -195,13 +195,14 @@ class MetodePembayaranController extends BaseController
         $data = $this->model::where('mmNama', 'like', "%{$search}%")
             ->orderBy('mmKode')
             ->limit(20)
-            ->get(['mmId', 'mmKode', 'mmNama']);
+            ->get(['mmId', 'mmKode', 'mmNama', 'mmAkunGl']);
 
         return response()->json($data->map(function ($item) {
             return [
                 'id' => $item->mmId,
                 'text' => $item->mmId . ' - ' . $item->mmNama,
                 'hiddenValue' => $item->mmNama,
+                'akunGl' => $item->mmAkunGl,
             ];
         }));
     }

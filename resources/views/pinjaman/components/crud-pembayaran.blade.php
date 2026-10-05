@@ -6,7 +6,7 @@
     // Cek apakah ada field autocomplete di form ini
     $hasAutocomplete = false;
     foreach ($form as $f) {
-        if (($f['type'] ?? '') === 'autocomplete') {
+        if (in_array($f['type'] ?? '', ['autocomplete', 'autocomplete_filter'])) {
             $hasAutocomplete = true;
             break;
         }
@@ -74,9 +74,11 @@
                     <input type="text" id="{{ $field['name'] }}_display"
                         class="form-control @error($field['name']) is-invalid @enderror" value="{{ $displayVal }}"
                         placeholder="{{ $field['placeholder'] }}" {{ !empty($field['required']) ? 'required' : '' }}
+                        {{ !empty($field['readonly']) ? 'readonly' : '' }}
+                        {{ !empty($field['disabled']) ? 'disabled' : '' }}
                         oninput="autoNumericDot(this, '{{ $field['name'] }}')" autocomplete="off">
                     <input type="hidden" name="{{ $field['name'] }}" id="{{ $field['name'] }}"
-                        value="{{ $rawVal }}">
+                        value="{{ $rawVal }}" {{ !empty($field['disabled']) ? 'disabled' : '' }}>
                     @error($field['name'])
                         <span class="invalid-feedback">{{ $message }}</span>
                     @enderror
@@ -151,7 +153,7 @@
                         <span class="invalid-feedback">{{ $message }}</span>
                     @enderror
                 </div>
-            @elseif ($field['type'] === 'autocomplete')
+            @elseif (in_array($field['type'], ['autocomplete', 'autocomplete_filter']))
                 @php
                     $acConfig = $field['autocomplete'] ?? [];
                     $acUrl = $acConfig['url'] ?? '';
@@ -159,6 +161,17 @@
                     $acValueField = $acConfig['valueField'] ?? 'id';
                     $acPlaceholder = $field['placeholder'] ?? '-- Cari dan pilih --';
                     $acFill = $acConfig['fill'] ?? [];
+                    // Khusus type autocomplete_filter: parameter pencarian diambil
+                    // live dari nilai field lain di form ini.
+                    // Bentuk: ['paramKirim' => 'namaFieldForm'], atau cukup
+                    // ['namaField'] bila nama param sama dengan nama field.
+                    $acFilters = [];
+                    if ($field['type'] === 'autocomplete_filter') {
+                        $acFilters = $acConfig['filters'] ?? [];
+                        if ($acFilters && isset($acFilters[0])) {
+                            $acFilters = array_combine($acFilters, $acFilters);
+                        }
+                    }
                     $selectedText = $autocompleteSelected[$field['name']] ?? null;
                     // Saat edit: susun teks "kode - nama" agar tampilan select2
                     // konsisten dengan format hasil pencarian API
@@ -192,7 +205,9 @@
                         class="form-control autocomplete-select @error($field['name']) is-invalid @enderror"
                         data-ac-url="{{ $acUrl }}" data-ac-text-field="{{ $acTextField }}"
                         data-ac-value-field="{{ $acValueField }}" data-ac-placeholder="{{ $acPlaceholder }}"
-                        data-ac-fill="{{ json_encode($acFill) }}" data-ac-hidden="{{ $field['nameValue'] ?? '' }}"
+                        data-ac-fill="{{ json_encode($acFill) }}"
+                        @if ($field['type'] === 'autocomplete_filter') data-ac-filters="{{ json_encode($acFilters) }}" @endif
+                        data-ac-hidden="{{ $field['nameValue'] ?? '' }}"
                         {{ !empty($field['required']) ? 'required' : '' }}>
                         @if ($oldVal)
                             <option value="{{ $oldVal }}" selected>
@@ -293,6 +308,7 @@
                         const valueField = el.dataset.acValueField || 'id';
                         const placeholder = el.dataset.acPlaceholder || '-- Cari dan pilih --';
                         const fill = el.dataset.acFill ? JSON.parse(el.dataset.acFill) : {};
+                        const filters = el.dataset.acFilters ? JSON.parse(el.dataset.acFilters) : {};
                         const $select = $(el);
                         const hiddenFieldName = el.dataset.acHidden || null;
 
@@ -308,10 +324,24 @@
                                 dataType: 'json',
                                 delay: 300,
                                 data: function(params) {
-                                    return {
+                                    const data = {
                                         search: params.term || '',
                                         ...fill
                                     };
+
+                                    // Filter dinamis: baca nilai field sumber secara live
+                                    // setiap kali pencarian berjalan, lalu kirim sebagai
+                                    // parameter (kosong berarti tidak ikut dikirim).
+                                    Object.keys(filters).forEach(function(param) {
+                                        const fieldName = filters[param];
+                                        const $src = $('#' + fieldName);
+                                        const val = $src.length ? $src.val() : '';
+                                        if (val !== '' && val !== null) {
+                                            data[param] = val;
+                                        }
+                                    });
+
+                                    return data;
                                 },
                                 processResults: function(data) {
                                     const results = Array.isArray(data) ? data : (data.data || data
@@ -335,7 +365,7 @@
                                 if (item.loading) {
                                     return $('<div class="select2-result-loading">' +
                                         '<i class="fas fa-spinner fa-spin mr-2"></i>Memuat data...</div>'
-                                        );
+                                    );
                                 }
                                 return $('<div class="select2-result-item">' +
                                     '<i class="fas fa-tag mr-2 text-muted"></i>' +
@@ -389,6 +419,64 @@
                                 $('#' + hiddenFieldName).val('');
                             });
                         }
+
+                        if (el.id === 'tppPinjamanId') {
+                            // Update field tersembunyi saat item dipilih
+                            $select.on('select2:select', function(e) {
+                                const item = e.params.data;
+
+                                $('#tppAnggotaId').val(item.anggotaId ?? '');
+                                fillAngka('tppNominalBayar', item.totalCicilan ?? '');
+                                fillAngka('tppBayarPokok', item.cicilanPokok ?? '');
+                                fillAngka('tppBayarBunga', item.cicilanBunga ?? '');
+                                fillAngka('trpTotalCicilan', item.totalPinjaman ?? '');
+                                fillAngka('trpSudahDibayar', item.sudahDibayar ?? '');
+                                fillAngka('trpSisaCicilan', item.sisaCicilan ?? '');
+                                // $('#tppAnggotaNama').val(item.anggotaNama ?? '');   
+                                // $('#tppNominalBayar').val(item.totalCicilan ?? '');
+                                // console.log(item);
+                            });
+
+                            // Kosongkan field tersembunyi saat item dibersihkan
+                            $select.on('select2:clear', function() {
+                                $('#tppAnggotaId').val('');
+                                fillAngka('tppNominalBayar', '');
+                                fillAngka('tppBayarPokok', '');
+                                fillAngka('tppBayarBunga', '');
+                                fillAngka('trpTotalCicilan', '');
+                                fillAngka('trpSudahDibayar', '');
+                                fillAngka('trpSisaCicilan', '');
+                                // $('#tppAnggotaNama').val('');
+                                // $('#tppNominalBayar').val('');
+                            });
+                        }
+                        // if (el.id === 'tppAngsuranId') {
+                        //     // Isi nominal bayar dari item yang dipilih, lalu format
+                        //     $select.on('select2:select', function(e) {
+                        //         fillAngka('tppNominalBayar', e.params.data.totalTagihan ?? '');
+                        //         fillAngka('tppBayarPokok', e.params.data.nominalAngsuran ?? '');
+                        //         fillAngka('tppBayarBunga', e.params.data.nominalBunga ?? '');
+                        //     });
+
+                        //     // Kosongkan nominal saat pilihan dibersihkan
+                        //     $select.on('select2:clear', function() {
+                        //         fillAngka('tppNominalBayar', '');
+                        //         fillAngka('tppBayarPokok', '');
+                        //         fillAngka('tppBayarBunga', '');
+                        //     });
+                        // }
+                        // Saat field sumber filter berubah, kosongkan pilihan
+                        // field ini agar tidak ada pilihan lama yang tidak
+                        // sesuai dengan filter terbaru.
+                        Object.keys(filters).forEach(function(param) {
+                            const fieldName = filters[param];
+                            if (fieldName && fieldName !== el.id) {
+                                $('#' + fieldName).on('change', function() {
+                                    $select.val(null).trigger('change');
+                                });
+                            }
+                        });
+
                         acSelects.push($select);
                     });
 

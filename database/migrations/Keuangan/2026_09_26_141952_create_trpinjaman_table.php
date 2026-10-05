@@ -26,6 +26,8 @@ return new class extends Migration {
             $table->decimal('trpCicilanPokok', 20, 2)->default  (0);
             $table->decimal('trpCicilanBunga', 20, 2)->default(0);
             $table->decimal('trpTotalCicilan', 20, 2)->default(0);
+            $table->decimal('trpSudahDibayar', 20, 2)->default(0);
+            $table->decimal('trpSisaCicilan', 20, 2)->default(0);
             $table->text('trpKeterangan')->nullable();
             $table->integer('trpStatusPinjaman')->default(0)->comment('0: Belum Lunas, 1: Lunas');
 
