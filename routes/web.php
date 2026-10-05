@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Akuntansi\BukuBesarController;
 use App\Http\Controllers\Akuntansi\JurnalController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Combo\JadwalangsuranforcomboController;
@@ -109,6 +110,11 @@ Route::middleware(['auth', 'checkRole'])->group(function () {
     Route::get('rpt-jurnal/load', [JurnalController::class, 'loadData'])->name('rpt-jurnal.load');
     Route::get('rpt-jurnal/pdf', [JurnalController::class, 'pdf'])->name('rpt-jurnal.pdf');
     Route::get('rpt-jurnal/excel', [JurnalController::class, 'excel'])->name('rpt-jurnal.excel');
+
+    Route::get('rpt-buku-besar', [BukuBesarController::class, 'index'])->name('rpt-buku-besar.index');
+    Route::get('rpt-buku-besar/load', [BukuBesarController::class, 'loadData'])->name('rpt-buku-besar.load');
+    Route::get('rpt-buku-besar/pdf', [BukuBesarController::class, 'pdf'])->name('rpt-buku-besar.pdf');
+    Route::get('rpt-buku-besar/excel', [BukuBesarController::class, 'excel'])->name('rpt-buku-besar.excel');
 
 });
 

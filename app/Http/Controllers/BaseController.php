@@ -656,4 +656,19 @@ abstract class BaseController extends Controller
         $hasil_rupiah = number_format($angka, $digit, ',', '.');
         return $hasil_rupiah;
     }
+
+    /**
+     * Format saldo rupiah; nilai negatif diberi tanda kurung,
+     * mis. -1.000.000,00 menjadi (1.000.000,00).
+     */
+    function formatSaldo($angka, $digit = 2)
+    {
+        $angka = (float) $angka;
+
+        if ($angka < 0) {
+            return '(' . $this->formatRupiah(abs($angka), $digit) . ')';
+        }
+
+        return $this->formatRupiah($angka, $digit);
+    }
 }
