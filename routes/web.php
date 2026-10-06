@@ -15,6 +15,7 @@ use App\Http\Controllers\Master\JenisPinjamanController;
 use App\Http\Controllers\Master\JenisSimpananController;
 use App\Http\Controllers\Master\Mapping\MappingPenerimaanController;
 use App\Http\Controllers\Master\Mapping\MappingPengeluaranController;
+use App\Http\Controllers\Master\Mapping\MappingSaldoAwalController;
 use App\Http\Controllers\Master\MasterAnggotaController;
 use App\Http\Controllers\Master\MasterBankkasController;
 use App\Http\Controllers\Master\MasterJaminanController;
@@ -93,6 +94,7 @@ Route::middleware(['auth', 'checkRole'])->group(function () {
 
     Route::resource('ms-mapping-penerimaan', MappingPenerimaanController::class);
     Route::resource('ms-mapping-pengeluaran', MappingPengeluaranController::class);
+    Route::resource('ms-mapping-saldoawal', MappingSaldoAwalController::class);
 
     Route::resource('ms-bank-kas', MasterBankkasController::class);
     Route::resource('ms-jaminan', MasterJaminanController::class);

@@ -10,6 +10,8 @@ use App\Models\Jurnal\Pengeluaran;
 use App\Models\Jurnal\PengeluaranCounter;
 use App\Models\Master\Mapping\MappingPenerimaan;
 use App\Models\Master\Mapping\MappingPengeluaran;
+use App\Models\Master\Mapping\MappingSaldoAwal;
+use App\Models\Master\SaldoAwal;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -383,6 +385,8 @@ abstract class BaseController extends Controller
             $mapping = MappingPenerimaan::where('mapKodeAsal', $sumber)->join('ms_objek', 'msoKode', '=', 'mapKodeDebet')->get();
         } elseif ($jenisMapping === 'PENGELUARAN') {
             $mapping = MappingPengeluaran::where('mapKodeAsal', $sumber)->join('ms_objek', 'msoKode', '=', 'mapKodeKredit')->get();
+        } elseif ($jenisMapping === 'SALDOAWAL') {
+            $mapping = MappingSaldoAwal::where('mapKodeAsal', $sumber)->join('ms_objek', 'msoKode', '=', 'mapKodeKredit')->get();
         } else {
             throw new \InvalidArgumentException("Jenis mapping tidak valid: {$jenisMapping}");
         }
@@ -444,6 +448,29 @@ abstract class BaseController extends Controller
                 ];
                 Jurnal::insert($jurnalData);
             }
+        } else if ($jenisMapping === 'SALDOAWAL') {
+            Jurnal::where('jHeadId', $data['tsId'] ?? null)
+                ->where('jSumber', $jns)
+                ->delete();
+
+            foreach ($mapping as $map) {
+                $jurnalData = [
+                    'jHeadId' => $data['tsId'] ?? null,
+                    'jNo' => $data['tsNoTrans'] ?? null,
+                    'jTgl' => $data['tsTanggal'] ?? null,
+                    'jKeterangan' => 'Saldo Awal ' . ($data['tsNamaBank'] ?? null),
+                    'jRekDebetKode' => $map['mapKodeDebet'] ?? null,
+                    'jRekDebetNama' => $map['mapNamaDebet'] ?? null,
+                    'jDebetNilai' => $data['tsSaldoAwal'] ?? 0,
+                    'jRekKreditKode' => $map['mapKodeKredit'] ?? null,
+                    'jRekKreditNama' => $map['mapNamaKredit'] ?? null,
+                    'jKreditNilai' => $data['tsSaldoAwal'] ?? 0,
+                    'jSumber' => $jns,
+                    'jStatus' => 0,
+                    'created_at' => now(),
+                ];
+                Jurnal::insert($jurnalData);
+            }
         } else {
             throw new \InvalidArgumentException("Jenis mapping tidak valid: {$jenisMapping}");
         }
@@ -462,6 +489,13 @@ abstract class BaseController extends Controller
     {
         return Penerimaan::where('tSumber', $sumber)
             ->where('tSumberId', $sumberId)
+            ->first();
+    }
+
+    /** Cari record saldo awal berdasarkan sumber transaksi. */
+    public function getSaldoawalByKode($sumber, $kodeBankKas)
+    {
+        return SaldoAwal::where('tsKodeBankKas', $kodeBankKas)
             ->first();
     }
 
@@ -499,6 +533,59 @@ abstract class BaseController extends Controller
             $this->hapusJurnal($sumber, $detail->tId);
             $detail->delete();
         }
+    }
+
+    /**
+     * Hapus kas saldo awal beserta jurnalnya berdasarkan sumber transaksi.
+     * Counter tidak dikembalikan agar nomor dokumen tidak pernah dipakai ulang.
+     */
+    public function hapusSaldoawalByKode($sumber, $kodeBankKas): void
+    {
+        $detail = $this->getSaldoawalByKode($sumber, $kodeBankKas);
+
+        if ($detail) {
+            $this->hapusJurnal($sumber, $detail->tsId);
+            $detail->delete();
+        }
+    }
+
+    public function getSaldoCoa(string $kodeCoa, string $saldoNormal = 'D'): string
+    {
+        $saldoNormal = strtoupper($saldoNormal);
+
+        if (!in_array($saldoNormal, ['D', 'K'], true)) {
+            throw new \InvalidArgumentException('Saldo normal harus D atau K.');
+        }
+
+        $hasil = Jurnal::query()
+            ->where(function ($query) use ($kodeCoa) {
+                $query->where('jRekDebetKode', $kodeCoa)
+                    ->orWhere('jRekKreditKode', $kodeCoa);
+            })
+            ->selectRaw('
+            COALESCE(SUM(
+                CASE WHEN jRekDebetKode = ?
+                    THEN COALESCE(jDebetNilai, 0)
+                    ELSE 0
+                END
+            ), 0) AS total_debet,
+            COALESCE(SUM(
+                CASE WHEN jRekKreditKode = ?
+                    THEN COALESCE(jKreditNilai, 0)
+                    ELSE 0
+                END
+            ), 0) AS total_kredit
+        ', [$kodeCoa, $kodeCoa]);
+
+        // Pengurangan di database menjaga presisi nilai DECIMAL.
+        $rumus = $saldoNormal === 'D' ? 'total_debet - total_kredit' : 'total_kredit - total_debet';
+
+        $saldo = DB::query()
+            ->fromSub($hasil, 'mutasi')
+            ->selectRaw("$rumus AS saldo")
+            ->value('saldo');
+
+        return (string) $saldo;
     }
 
     //  ======================== HELPER FUNCTIONS ========================
