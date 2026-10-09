@@ -15,6 +15,8 @@ return new class extends Migration {
             // $table->integer('tppAngsuranId');
             $table->integer('tppPinjamanId');
             $table->integer('tppAnggotaId');
+            $table->string('tppAnggotaNama', 225)->nullable();
+            $table->string('tppKodePinjaman', 200)->nullable();
             $table->integer('tppMetodeBayarId');
             $table->string('tppNoBukti', 225);
             $table->date('tppTanggalBayar');

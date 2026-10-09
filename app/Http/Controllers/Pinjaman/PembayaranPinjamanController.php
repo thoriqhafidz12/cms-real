@@ -70,6 +70,24 @@ class PembayaranPinjamanController extends BaseController
                 'readonly' => true,
             ],
             [
+                'name' => 'tppAnggotaNama',
+                'label' => 'Nama Anggota',
+                'placeholder' => 'Nama Anggota',
+                'type' => 'hidden',
+                'col' => 'col-md-6',
+                'required' => true,
+                'readonly' => true,
+            ],
+            [
+                'name' => 'tppKodePinjaman',
+                'label' => 'Kode Pinjaman',
+                'placeholder' => 'Kode Pinjaman',
+                'type' => 'hidden',
+                'col' => 'col-md-6',
+                'required' => true,
+                'readonly' => true,
+            ],
+            [
                 'name' => 'trpTotalCicilan',
                 'label' => 'Total Cicilan + Bunga',
                 'placeholder' => 'Masukkan total cicilan',
@@ -143,14 +161,14 @@ class PembayaranPinjamanController extends BaseController
                     'valueField' => 'id',
                 ]
             ],
-            [
-                'name' => 'tppKeterangan',
-                'label' => 'Keterangan',
-                'placeholder' => 'Masukkan keterangan',
-                'type' => 'textarea',
-                'col' => 'col-md-12',
-                'required' => false,
-            ]
+            // [
+            //     'name' => 'tppKeterangan',
+            //     'label' => 'Keterangan',
+            //     'placeholder' => 'Masukkan keterangan',
+            //     'type' => 'textarea',
+            //     'col' => 'col-md-12',
+            //     'required' => false,
+            // ]
         ];
 
         $this->grid =
@@ -168,7 +186,7 @@ class PembayaranPinjamanController extends BaseController
                 [
                     'label' => 'Nominal Bayar',
                     'field' => 'tppNominalBayar',
-                    'type' => 'text'
+                    'type' => 'angka'
                 ],
                 [
                     'label' => 'Keterangan',
@@ -303,6 +321,7 @@ class PembayaranPinjamanController extends BaseController
     {
         $data['tppBayarDenda'] = 0;
         $data['tppNoBukti'] = 'NB-' . date('dmYHi') . '-' . rand(1000, 9999); // Generate No Bukti otomatis
+        $data['tppKeterangan'] = 'Pembayaran pinjaman #' . $data['tppKodePinjaman'] . ' oleh anggota #' . $data['tppAnggotaNama'];
 
         return $data;
     }
@@ -417,8 +436,9 @@ class PembayaranPinjamanController extends BaseController
             'tNoPenerimaan' => $data['tppNoPenerimaan'],
             'tNilaiBayar' => $data['tppNominalBayar'],
             'tTglBayar' => $data['tppTanggalBayar'],
-            'tAsalPenerimaan' => $data['tppAnggotaId'] ?? null,
-            'tDeskripsi' => $data['tppKeterangan'] ?? null,
+            'tAsalPenerimaan' => $data['tppAnggotaNama'] ?? null,
+            // 'tDeskripsi' => $data['tppKeterangan'] ?? null,
+            'tDeskripsi' => 'Pembayaran pinjaman #' . $data['tppKodePinjaman'] . ' oleh anggota #' . $data['tppAnggotaNama'],
             'tCoa' => '1.01.03.01', // Contoh COA untuk penerimaan pinjaman
         ]);
 
@@ -438,8 +458,8 @@ class PembayaranPinjamanController extends BaseController
             $detail->update([
                 'tNilaiBayar' => $data['tppNominalBayar'],
                 'tTglBayar' => $data['tppTanggalBayar'],
-                'tAsalPenerimaan' => $data['tppAnggotaId'] ?? null,
-                'tDeskripsi' => $data['tppKeterangan'] ?? null,
+                'tAsalPenerimaan' => $data['tppAnggotaNama'] ?? null,
+                // 'tDeskripsi' => $data['tppKeterangan'] ?? null,
             ]);
 
             // createJurnal otomatis delete + insert ulang, jadi jurnal selalu sinkron.

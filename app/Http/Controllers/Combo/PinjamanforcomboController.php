@@ -29,6 +29,7 @@ class PinjamanforcomboController extends BaseController
             return [
                 'id' => $item->trpjId,
                 'text' => $item->trpNoPinjaman . ' | ' . $item->trpAnggotaNama,
+                'noPinjaman' => $item->trpNoPinjaman,
                 'anggotaId' => $item->trpAnggotaId,
                 'anggotaNama' => $item->trpAnggotaNama,
                 'nominalPinjaman' => $this->formatRupiah($item->trpNominalPinjaman, 2),

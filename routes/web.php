@@ -3,6 +3,7 @@
 use App\Http\Controllers\Akuntansi\BukuBesarController;
 use App\Http\Controllers\Akuntansi\JurnalController;
 use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\Bendahara\PenerimaanController;
 use App\Http\Controllers\Combo\JadwalangsuranforcomboController;
 use App\Http\Controllers\Combo\PengajuanforcomboController;
 use App\Http\Controllers\Combo\PinjamanforcomboController;
@@ -117,6 +118,10 @@ Route::middleware(['auth', 'checkRole'])->group(function () {
     Route::get('rpt-buku-besar/load', [BukuBesarController::class, 'loadData'])->name('rpt-buku-besar.load');
     Route::get('rpt-buku-besar/pdf', [BukuBesarController::class, 'pdf'])->name('rpt-buku-besar.pdf');
     Route::get('rpt-buku-besar/excel', [BukuBesarController::class, 'excel'])->name('rpt-buku-besar.excel');
+
+    // BENDAHARA
+    Route::resource('penerimaan', PenerimaanController::class);
+    Route::resource('pengeluaran', PengeluaranController::class);
 
 });
 

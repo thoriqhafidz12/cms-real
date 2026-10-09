@@ -126,31 +126,46 @@ abstract class BaseController extends Controller
     public function update(Request $request, string $id): RedirectResponse
     {
         $modelClass = $this->model;
+
         $record = $modelClass::where($this->primaryKey, $id)->firstOrFail();
 
         $validated = $request->validate(
             $this->buildValidationRules($id)
         );
 
-        if (method_exists($this, 'beforeUpdate')) {
-            $data = $this->beforeUpdate($validated, $record);
-        } else {
-            $data = $validated;
+        try {
+            DB::transaction(function () use ($modelClass, $record, $validated) {
+                $data = $validated;
+
+                if (method_exists($this, 'beforeUpdate')) {
+                    $data = $this->beforeUpdate($validated, $record);
+                }
+
+                $data[$modelClass::UPDATED_BY] = auth()->user()->name;
+                $data[$modelClass::UPDATED_AT] = now();
+
+                if (!$record->update($data)) {
+                    throw new \RuntimeException('Gagal memperbarui data.');
+                }
+
+                if (method_exists($this, 'afterUpdate')) {
+                    $this->afterUpdate(
+                        $record->fresh()->toArray(),
+                        $record->{$this->primaryKey}
+                    );
+                }
+            });
+
+            return redirect()
+                ->route($this->route . '.index')
+                ->with('success', $this->titlePage . ' berhasil diupdate.');
+        } catch (\Throwable $e) {
+            report($e);
+
+            return back()
+                ->withInput()
+                ->with('error', $this->titlePage . ' gagal diupdate.');
         }
-
-        $data[$modelClass::UPDATED_BY] = auth()->user()->name;
-        $data[$modelClass::UPDATED_AT] = now();
-
-        $record->update($data);
-        // $record->update($this->beforeUpdate($validated, $id));
-
-        if (method_exists($this, 'afterUpdate')) {
-            $this->afterUpdate($record->fresh()->toArray(), $record->{$this->primaryKey});
-        }
-
-        return redirect()
-            ->route($this->route . '.index')
-            ->with('success', $this->titlePage . ' berhasil diupdate.');
     }
 
     /**
@@ -161,19 +176,30 @@ abstract class BaseController extends Controller
         $modelClass = $this->model;
         $record = $modelClass::where($this->primaryKey, $id)->firstOrFail();
 
-        if (method_exists($this, 'beforeDelete')) {
-            $this->beforeDelete($id);
+        try {
+            DB::transaction(function () use ($record, $id) {
+                if (method_exists($this, 'beforeDelete')) {
+                    $this->beforeDelete($id);
+                }
+
+                if (!$record->delete()) {
+                    throw new \RuntimeException('Gagal menghapus data.');
+                }
+
+                if (method_exists($this, 'afterDelete')) {
+                    $this->afterDelete($id);
+                }
+            });
+
+            return redirect()
+                ->route($this->route . '.index')
+                ->with('success', $this->titlePage . ' berhasil dihapus.');
+        } catch (\Throwable $e) {
+            report($e);
+
+            return back()
+                ->with('error', $this->titlePage . ' gagal dihapus.');
         }
-
-        $record->delete();
-
-        if (method_exists($this, 'afterDelete')) {
-            $this->afterDelete($id);
-        }
-
-        return redirect()
-            ->route($this->route . '.index')
-            ->with('success', $this->titlePage . ' berhasil dihapus.');
     }
 
     /**

@@ -11,6 +11,8 @@ use Illuminate\Database\Eloquent\Model;
 class Penerimaan extends Model
 {
     protected $primaryKey = 'tId';
+    public const CREATED_BY = 'created_by';
     public const CREATED_AT = 'created_at';
+    public const UPDATED_BY = 'updated_by';
     public const UPDATED_AT = 'updated_at';
 }

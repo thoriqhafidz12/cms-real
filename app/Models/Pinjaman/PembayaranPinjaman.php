@@ -5,7 +5,7 @@ namespace App\Models\Pinjaman;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Model;
-#[Fillable(['tppAngsuranId', 'tppPinjamanId', 'tppAnggotaId', 'tppMetodeBayarId', 'tppNoBukti', 'tppTanggalBayar', 'tppNominalBayar', 'tppBayarPokok', 'tppBayarBunga', 'tppBayarDenda', 'tppKeterangan', 'tppStatus', 'tppCreatedBy', 'tppUpdatedBy'])]
+#[Fillable(['tppAngsuranId', 'tppPinjamanId', 'tppAnggotaId', 'tppAnggotaNama', 'tppKodePinjaman', 'tppMetodeBayarId', 'tppNoBukti', 'tppTanggalBayar', 'tppNominalBayar', 'tppBayarPokok', 'tppBayarBunga', 'tppBayarDenda', 'tppKeterangan', 'tppStatus', 'tppCreatedBy', 'tppUpdatedBy'])]
 #[Table('tr_pembayaranpinjaman')]
 class PembayaranPinjaman extends Model
 {

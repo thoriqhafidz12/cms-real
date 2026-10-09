@@ -432,7 +432,8 @@
                                 fillAngka('trpTotalCicilan', item.totalPinjaman ?? '');
                                 fillAngka('trpSudahDibayar', item.sudahDibayar ?? '');
                                 fillAngka('trpSisaCicilan', item.sisaCicilan ?? '');
-                                // $('#tppAnggotaNama').val(item.anggotaNama ?? '');   
+                                $('#tppAnggotaNama').val(item.anggotaNama ?? ''); 
+                                $('#tppKodePinjaman').val(item.noPinjaman ?? ''); 
                                 // $('#tppNominalBayar').val(item.totalCicilan ?? '');
                                 // console.log(item);
                             });
@@ -446,7 +447,8 @@
                                 fillAngka('trpTotalCicilan', '');
                                 fillAngka('trpSudahDibayar', '');
                                 fillAngka('trpSisaCicilan', '');
-                                // $('#tppAnggotaNama').val('');
+                                $('#tppAnggotaNama').val('');
+                                $('#tppKodePinjaman').val('');
                                 // $('#tppNominalBayar').val('');
                             });
                         }

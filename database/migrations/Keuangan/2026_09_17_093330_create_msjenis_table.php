@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('msjAkunKode', 20);
             $table->string('msjKelompokKode', 20);
             $table->string('msjKode', 20)->unique();
-            $table->string('msjNama', 100);
+            $table->string('msjNama', 225);
             $table->datetime('msjCreatedAt')->nullable();
             $table->string('msjCreatedBy', 50)->nullable();
             $table->datetime('msjUpdatedAt')->nullable();

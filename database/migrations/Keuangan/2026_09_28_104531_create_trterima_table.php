@@ -22,6 +22,8 @@ return new class extends Migration {
             $table->string('tAsalPenerimaan', 100)->nullable();
             $table->string('tDeskripsi')->nullable();
             $table->string('tCoa', 20)->nullable();
+            $table->string('created_by', 200)->nullable();
+            $table->string('updated_by', 200)->nullable();
             $table->timestamps();
         });
     }
