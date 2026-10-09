@@ -218,8 +218,9 @@ document.addEventListener('DOMContentLoaded', function () {
     // 4) Klik link menu sungguhan → tutup drawer; toggle submenu
     //    (data-toggle="collapse") TIDAK boleh menutup drawer,
     //    agar submenu tetap bisa di-expand di dalam drawer.
+    //    (termasuk submenu bersarang level 3 — .collapse-item.submenu-toggle)
     $(document).on('click',
-        '.sidebar .collapse-item, .sidebar a.nav-link:not([data-toggle="collapse"])',
+        '.sidebar .collapse-item:not([data-toggle="collapse"]), .sidebar a.nav-link:not([data-toggle="collapse"])',
         function () {
             if (isMobile() && $('body').hasClass('sidebar-toggled')) {
                 $('body').removeClass('sidebar-toggled drawer-user-open');

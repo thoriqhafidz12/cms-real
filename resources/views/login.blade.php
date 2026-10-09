@@ -56,13 +56,33 @@
                                         @enderror
                                     </div>
                                     <div class="form-group">
+                                        <div class="position-relative">
+                                            <input type="password"
+                                                class="form-control form-control-user @error('password') is-invalid @enderror"
+                                                id="exampleInputPassword" name="password" placeholder="Password"
+                                                style="padding-right: 55px;" required>
+
+                                            <button type="button" id="togglePassword" aria-label="Tampilkan password"
+                                                aria-controls="exampleInputPassword" aria-pressed="false"
+                                                style="position: absolute; right: 18px; top: 50%; transform: translateY(-50%); border: none; background: transparent; cursor: pointer; padding: 5px; color: #858796;">
+                                                <i class="fas fa-eye" id="togglePasswordIcon" aria-hidden="true"></i>
+                                            </button>
+                                        </div>
+
+                                        @error('password')
+                                            <span class="invalid-feedback d-block" role="alert">
+                                                {{ $message }}
+                                            </span>
+                                        @enderror
+                                    </div>
+                                    {{-- <div class="form-group">
                                         <input type="password"
                                             class="form-control form-control-user @error('password') is-invalid @enderror"
                                             id="exampleInputPassword" name="password" placeholder="Password" required>
                                         @error('password')
                                             <span class="invalid-feedback" role="alert">{{ $message }}</span>
                                         @enderror
-                                    </div>
+                                    </div> --}}
                                     {{-- <div class="form-group">
                                         <div class="custom-control custom-checkbox small">
                                             <input type="checkbox" class="custom-control-input" id="customCheck"
@@ -79,7 +99,8 @@
                                     <a class="small" href="{{ url('/') }}/forgot-password">Forgot Password?</a>
                                 </div> --}}
                                 <div class="text-center">
-                                    <a class="btn btn-info btn-user btn-sm" href="{{ url('/') }}/register">Buat Akun !</a>
+                                    <a class="btn btn-info btn-user btn-sm" href="{{ url('/') }}/register">Buat
+                                        Akun !</a>
                                 </div>
                             </div>
                         </div>
@@ -115,6 +136,22 @@
                     form.submit();
                 });
             });
+        });
+        document.getElementById('togglePassword').addEventListener('click', function() {
+            const input = document.getElementById('exampleInputPassword');
+            const icon = document.getElementById('togglePasswordIcon');
+            const showPassword = input.type === 'password';
+
+            input.type = showPassword ? 'text' : 'password';
+
+            icon.classList.toggle('fa-eye', !showPassword);
+            icon.classList.toggle('fa-eye-slash', showPassword);
+
+            this.setAttribute('aria-pressed', String(showPassword));
+            this.setAttribute(
+                'aria-label',
+                showPassword ? 'Sembunyikan password' : 'Tampilkan password'
+            );
         });
     </script>
 @endif

@@ -77,6 +77,22 @@
                                         <td data-label="Route">{{ $child->mRoute ?? '—' }}</td>
                                         <td data-label="Level"><span class="badge badge-light">Child</span></td>
                                     </tr>
+
+                                    {{-- Grandchild Rows (level 3) --}}
+                                    @foreach ($grandchildMenus->get($child->mId, collect()) as $gc)
+                                        <tr>
+                                            <td class="pl-5" data-label="Pilih">
+                                                <input type="checkbox" name="menu_ids[]" value="{{ $gc->mId }}"
+                                                       class="menu-checkbox"
+                                                       {{ in_array($gc->mId, $assignedMenuIds) ? 'checked' : '' }}>
+                                            </td>
+                                            <td data-label="Nama Menu">
+                                                <span class="ml-5">&rdsh; {{ $gc->mNama }}</span>
+                                            </td>
+                                            <td data-label="Route">{{ $gc->mRoute ?? '—' }}</td>
+                                            <td data-label="Level"><span class="badge badge-light">Grandchild</span></td>
+                                        </tr>
+                                    @endforeach
                                 @endforeach
                             @endforeach
                         </tbody>

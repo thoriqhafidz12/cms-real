@@ -44,6 +44,10 @@
                     $parentMenus = $allMenus->whereNull('mParentId');
                     $childMenus = $allMenus->whereNotNull('mParentId')->groupBy('mParentId');
 
+                    // Menu level 3: anak dari menu child (contoh: Master → COA → AKUN/OBJEK)
+                    $childIds = $allMenus->whereNotNull('mParentId')->pluck('mId');
+                    $grandchildMenus = $allMenus->whereIn('mParentId', $childIds)->groupBy('mParentId');
+
                     /**
                      * Resolve route name dari mRoute prefix.
                      * Cek: 'dashboard' → Route::has('dashboard') = true
@@ -63,9 +67,9 @@
                     };
 
                     /**
-                     * Cek apakah menu ini (atau child-nya) sedang aktif.
+                     * Cek apakah menu ini (atau child/grandchild-nya) sedang aktif.
                      */
-                    $isActive = function ($menu, $children) use ($resolveRoute): bool {
+                    $isActive = function ($menu, $children) use ($resolveRoute, $grandchildMenus): bool {
                         $routeName = $resolveRoute($menu->mRoute);
                         if ($routeName && request()->routeIs($routeName . '*')) {
                             return true;
@@ -74,6 +78,12 @@
                             $childRoute = $resolveRoute($child->mRoute);
                             if ($childRoute && request()->routeIs($childRoute . '*')) {
                                 return true;
+                            }
+                            foreach ($grandchildMenus->get($child->mId, collect()) as $gc) {
+                                $gcRoute = $resolveRoute($gc->mRoute);
+                                if ($gcRoute && request()->routeIs($gcRoute . '*')) {
+                                    return true;
+                                }
                             }
                         }
                         return false;
@@ -110,11 +120,44 @@
                                         </a>
                                     @endif
                                     @foreach ($children as $child)
-                                        @php $childRoute = $resolveRoute($child->mRoute); @endphp
-                                        <a class="collapse-item {{ $childRoute && request()->routeIs($childRoute . '*') ? 'active' : '' }}"
-                                            href="{{ $childRoute ? route($childRoute) : '#' }}">
-                                            {{ $child->mNama }}
-                                        </a>
+                                        @php
+                                            $childRoute = $resolveRoute($child->mRoute);
+                                            $grandchildren = $grandchildMenus->get($child->mId, collect());
+                                            $childActive = $childRoute && request()->routeIs($childRoute . '*');
+                                            // Submenu child terbuka bila salah satu grandchild-nya aktif
+                                            $subActive = $grandchildren->contains(function ($gc) use ($resolveRoute) {
+                                                $gcRoute = $resolveRoute($gc->mRoute);
+                                                return $gcRoute && request()->routeIs($gcRoute . '*');
+                                            });
+                                        @endphp
+
+                                        @if ($grandchildren->isNotEmpty())
+                                            {{-- Child yang punya submenu sendiri (menu level 3) --}}
+                                            <a class="collapse-item submenu-toggle {{ $childActive || $subActive ? 'active' : 'collapsed' }}"
+                                                href="#" data-toggle="collapse"
+                                                data-target="#subMenu{{ $child->mId }}"
+                                                aria-expanded="{{ $subActive ? 'true' : 'false' }}"
+                                                aria-controls="subMenu{{ $child->mId }}">
+                                                {{ $child->mNama }}
+                                                <i class="fas fa-chevron-down float-right mt-1 fa-xs"></i>
+                                            </a>
+                                            <div id="subMenu{{ $child->mId }}" class="collapse {{ $subActive ? 'show' : '' }}">
+                                                <div class="bg-light py-2 collapse-inner-nested rounded">
+                                                    @foreach ($grandchildren as $gc)
+                                                        @php $gcRoute = $resolveRoute($gc->mRoute); @endphp
+                                                        <a class="collapse-item {{ $gcRoute && request()->routeIs($gcRoute . '*') ? 'active' : '' }}"
+                                                            href="{{ $gcRoute ? route($gcRoute) : '#' }}">
+                                                            {{ $gc->mNama }}
+                                                        </a>
+                                                    @endforeach
+                                                </div>
+                                            </div>
+                                        @else
+                                            <a class="collapse-item {{ $childActive ? 'active' : '' }}"
+                                                href="{{ $childRoute ? route($childRoute) : '#' }}">
+                                                {{ $child->mNama }}
+                                            </a>
+                                        @endif
                                     @endforeach
                                 </div>
                             </div>

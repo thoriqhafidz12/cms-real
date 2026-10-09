@@ -92,11 +92,26 @@ class MenuController extends BaseController
             ]
         ];
 
+        // Pilihan parent: menu level 1 & 2 saja (level 3 tidak dirender
+        // sebagai collapse di sidebar). Label child diberi prefix nama
+        // parent-nya agar jelas, mis. "Master → COA".
         $this->extraViewData = [
-            'parentMenus' => fn() => Menu::whereNull('mParentId')
-                ->where('mIsActive', 1)
-                ->orderBy('mOrder')
-                ->get(),
+            'parentMenus' => function () {
+                $menus = Menu::where('mIsActive', 1)->orderBy('mOrder')->get();
+                $childIds = $menus->whereNotNull('mParentId')->pluck('mId');
+                $byId = $menus->keyBy('mId');
+
+                return $menus
+                    ->reject(fn ($m) => $childIds->contains($m->mParentId))
+                    ->map(function ($m) use ($byId) {
+                        $label = $m->mNama;
+                        if ($m->mParentId && isset($byId[$m->mParentId])) {
+                            $label = $byId[$m->mParentId]->mNama . ' → ' . $label;
+                        }
+                        return ['value' => $m->mId, 'label' => $label];
+                    })
+                    ->values();
+            },
         ];
     }
 

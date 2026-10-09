@@ -105,7 +105,13 @@ class RoleController extends BaseController
         $parentMenus = $allMenus->whereNull('mParentId');
         $childMenus = $allMenus->whereNotNull('mParentId')->groupBy('mParentId');
 
-        return view('roles.menu', compact('role', 'parentMenus', 'childMenus', 'assignedMenuIds'));
+        // Menu level 3 (grandchild) untuk baris ceklis di bawah child-nya
+        $childIds = $allMenus->whereNotNull('mParentId')->pluck('mId');
+        $grandchildMenus = $allMenus->whereIn('mParentId', $childIds)->groupBy('mParentId');
+
+        return view('roles.menu', compact(
+            'role', 'parentMenus', 'childMenus', 'grandchildMenus', 'assignedMenuIds'
+        ));
     }
 
     /**
