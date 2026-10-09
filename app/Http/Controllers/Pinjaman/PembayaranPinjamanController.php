@@ -319,8 +319,9 @@ class PembayaranPinjamanController extends BaseController
 
     protected function beforeSave(array $data, $record = null): array
     {
+        $counterKwitansi = $this->getKwitansiCounter($data['tppTanggalBayar']);
         $data['tppBayarDenda'] = 0;
-        $data['tppNoBukti'] = 'NB-' . date('dmYHi') . '-' . rand(1000, 9999); // Generate No Bukti otomatis
+        $data['tppNoBukti'] = str_pad($counterKwitansi, 5, '0', STR_PAD_LEFT) . '/' . $data['tppTanggalBayar'];
         $data['tppKeterangan'] = 'Pembayaran pinjaman #' . $data['tppKodePinjaman'] . ' oleh anggota #' . $data['tppAnggotaNama'];
 
         return $data;
@@ -331,10 +332,10 @@ class PembayaranPinjamanController extends BaseController
         $this->alokasiPembayaranKeJadwal($data);
 
         $counterTerima = $this->getTerimaCounter($data['tppTanggalBayar']);
-        $counterKwitansi = $this->getKwitansiCounter($data['tppTanggalBayar']);
+        // $counterKwitansi = $this->getKwitansiCounter($data['tppTanggalBayar']);
 
         $data['tppNoPenerimaan'] = str_pad($counterTerima, 5, '0', STR_PAD_LEFT) . '/PENERIMAAN/' . $data['tppTanggalBayar'];
-        $data['tppNoKwitansi'] = str_pad($counterKwitansi, 5, '0', STR_PAD_LEFT) . '/' . $data['tppTanggalBayar'];
+        // $data['tppNoKwitansi'] = str_pad($counterKwitansi, 5, '0', STR_PAD_LEFT) . '/' . $data['tppTanggalBayar'];
 
         $this->createPenerimaan($data);
 

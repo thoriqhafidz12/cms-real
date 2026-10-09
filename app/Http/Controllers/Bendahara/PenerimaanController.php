@@ -155,7 +155,7 @@ class PenerimaanController extends BaseController
         $counterKwitansi = $this->getKwitansiCounter($data['tTglBayar']);
 
         $data['tNoPenerimaan'] = str_pad($counterTerima, 5, '0', STR_PAD_LEFT) . '/PENERIMAAN/' . $data['tTglBayar'];
-        $data['tKwitansi'] = 'NB-' . date('dmYHi') . '-' . rand(1000, 9999);
+        $data['tKwitansi'] = str_pad($counterKwitansi, 5, '0', STR_PAD_LEFT) . '/' . $data['tppTanggalBayar'];
         return $data;
     }
 
