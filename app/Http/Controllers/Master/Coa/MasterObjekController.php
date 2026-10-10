@@ -153,15 +153,21 @@ class MasterObjekController extends BaseController
 
     public function search(Request $request): JsonResponse
     {
-        $search = $request->get('search');
-        $fObjek = $request->get('fObjek', []);
+        $search = $request->get('search', '');
+        $fObjek = $request->get('fObjek', '');
 
-        $data = $this->model::where('msoNama', 'like', "%{$search}%")->orWhere('msoKode', 'like', "%{$search}%")
-            ->orderBy('msoKode')
-            ->when(!empty($fObjek), function ($query) use ($fObjek) {
-                $query->where('msoJenisKode', 'LIKE', "%$fObjek%");
+        $data = $this->model::query()
+            ->when($fObjek !== null && $fObjek !== '', function ($query) use ($fObjek) {
+                $query->where('msoJenisKode', 'LIKE', "{$fObjek}%");
             })
-            ->limit(20)
+            ->when($search !== null && $search !== '', function ($query) use ($search) {
+                $query->where(function ($q) use ($search) {
+                    $q->where('msoKode', 'LIKE', "%{$search}%")
+                        ->orWhere('msoNama', 'LIKE', "%{$search}%");
+                });
+            })
+            ->orderBy('msoKode')
+            ->limit(50)
             ->get(['msoId', 'msoKode', 'msoNama']);
 
         return response()->json($data->map(function ($item) {

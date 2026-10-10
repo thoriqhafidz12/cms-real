@@ -3,35 +3,24 @@
 namespace App\Http\Controllers\Bendahara;
 
 use App\Http\Controllers\BaseController;
-use App\Models\Jurnal\Penerimaan;
-use Illuminate\Http\RedirectResponse;
+use App\Models\Jurnal\Pengeluaran;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
-class PenerimaanController extends BaseController
+class PengeluaranController extends BaseController
 {
     public function __construct()
     {
-        $this->model = Penerimaan::class;
-        $this->route = 'penerimaan';
-        $this->titlePage = 'Daftar Penerimaan';
-        $this->primaryKey = 'tId';
-        $this->table = 'tr_terima';
-        $this->searchColumn = ['tKwitansi', 'tNoPenerimaan', 'tNilaiBayar', 'tTglBayar'];
-
-        // $this->rules = [
-        //     'mjPinjamanKode' => 'required|unique:ms_jnspinjaman,mjPinjamanKode',
-        // ];
-
-        $this->status = [
-            ['value' => 'Active', 'name' => 'Active'],
-            ['value' => 'Inactive', 'name' => 'Inactive'],
-        ];
+        $this->model = Pengeluaran::class;
+        $this->route = 'pengeluaran';
+        $this->titlePage = 'Daftar Pengeluaran';
+        $this->primaryKey = 'kId';
+        $this->table = 'tr_keluar';
+        $this->searchColumn = ['kNo', 'kKeterangan', 'kSumber'];
 
         $this->form = [
             [
-                'name' => 'tNilaiBayar',
+                'name' => 'kNilai',
                 'label' => 'Nilai Bayar',
                 'placeholder' => 'Masukkan nilai bayar',
                 'type' => 'angka',
@@ -39,7 +28,7 @@ class PenerimaanController extends BaseController
                 'required' => true,
             ],
             [
-                'name' => 'tTglBayar',
+                'name' => 'kTgl',
                 'label' => 'Tanggal Bayar',
                 'placeholder' => 'Masukkan tanggal bayar',
                 'type' => 'date',
@@ -47,61 +36,48 @@ class PenerimaanController extends BaseController
                 'required' => true,
             ],
             [
-                'name' => 'tAsalPenerimaan',
-                'label' => 'Asal Penerimaan',
-                'placeholder' => 'Masukkan asal penerimaan',
-                'type' => 'text',
-                'col' => 'col-md-6',
-                'required' => true,
-            ],
-            [
-                'name' => 'tCoa',
+                'name' => 'kCoa',
                 'label' => 'COA',
                 'placeholder' => '-- Cari dan pilih COA --',
                 'type' => 'autocomplete',
                 'col' => 'col-md-6',
                 'required' => true,
                 'autocomplete' => [
-                    'url' => route('api.mapping-penerimaan.search'),
+                    'url' => route('api.mapping-pengeluaran.search'),
                     'textField' => 'text',
                     'valueField' => 'id',
                 ]
             ],
             [
-                'name' => 'tDeskripsi',
-                'label' => 'Deskripsi',
-                'placeholder' => 'Masukkan deskripsi',
+                'name' => 'kKeterangan',
+                'label' => 'Keterangan',
+                'placeholder' => 'Masukkan keterangan',
                 'type' => 'textarea',
                 'col' => 'col-md-6',
                 'required' => true,
-            ],
+            ]
         ];
 
         $this->grid =
             [
                 [
-                    'label' => 'Nomor Kwitansi',
-                    'field' => 'tKwitansi',
+                    'label' => 'Nomor Pengeluaran',
+                    'field' => 'kNo',
                     'type' => 'text'
                 ],
                 [
                     'label' => 'Tanggal',
-                    'field' => 'tTglBayar',
+                    'field' => 'kTgl',
                     'type' => 'date'
                 ],
                 [
-                    'label' => 'Asal Penerimaan',
-                    'field' => 'tAsalPenerimaan',
-                    'type' => 'text'
-                ],
-                [
                     'label' => 'Nominal',
-                    'field' => 'tNilaiBayar',
+                    'field' => 'kNilai',
                     'type' => 'angka'
                 ],
                 [
-                    'label' => 'Deskripsi',
-                    'field' => 'tDeskripsi',
+                    'label' => 'Keterangan',
+                    'field' => 'kKeterangan',
                     'type' => 'text'
                 ]
             ];
@@ -136,7 +112,7 @@ class PenerimaanController extends BaseController
             $extra[$key] = is_callable($resolver) ? $resolver() : $resolver;
         }
 
-        return view('bendahara.penerimaan', array_merge([
+        return view('bendahara.pengeluaran', array_merge([
             'items' => $items,
             'search' => $search,
             'editData' => $editData,
@@ -150,32 +126,30 @@ class PenerimaanController extends BaseController
 
     protected function beforeSave(array $data, $record = null): array
     {
-        $counterTerima = $this->getTerimaCounter($data['tTglBayar']);
-        $counterKwitansi = $this->getKwitansiCounter($data['tTglBayar']);
+        $counterKeluar = $this->getKeluarCounter($data['kTgl']);
 
-        $data['tNoPenerimaan'] = str_pad($counterTerima, 5, '0', STR_PAD_LEFT) . '/PENERIMAAN/' . $data['tTglBayar'];
-        $data['tKwitansi'] = str_pad($counterKwitansi, 5, '0', STR_PAD_LEFT) . '/' . $data['tTglBayar'];
+        $data['kNo'] = str_pad($counterKeluar, 5, '0', STR_PAD_LEFT) . '/PENGELUARAN/' . $data['kTgl'];
         return $data;
     }
 
     protected function afterSave($data)
     {
-        $this->createJurnal('PENERIMAAN', $data['tCoa'], $data, 'M-TERIMA');
+        $this->createJurnal('PENGELUARAN', $data['kCoa'], $data, 'M-KELUAR');
     }
 
     protected function beforeUpdate(array $data, $record): array
     {
-        $this->hapusJurnal('M-TERIMA', $record->{$this->primaryKey});
+        $this->hapusJurnal('M-KELUAR', $record->{$this->primaryKey});
         return $data;
     }
 
     protected function afterUpdate($data, $id)
     {
-        $this->createJurnal('PENERIMAAN', $data['tCoa'], $data, 'M-TERIMA');
+        $this->createJurnal('PENGELUARAN', $data['kCoa'], $data, 'M-KELUAR');
     }
 
     protected function beforeDelete($id)
     {
-        $this->hapusJurnal('M-TERIMA', $id);
+        $this->hapusJurnal('M-KELUAR', $id);
     }
 }

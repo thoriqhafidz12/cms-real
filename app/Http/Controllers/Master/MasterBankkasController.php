@@ -60,6 +60,7 @@ class MasterBankkasController extends BaseController
                 'required' => true,
                 'autocomplete' => [
                     'url' => route('api.objek.search'),
+                    'fill' => ['fObjek' => '1.0'],
                     'textField' => 'text',
                     'valueField' => 'id',
                 ]

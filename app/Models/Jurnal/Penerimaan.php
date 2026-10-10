@@ -5,7 +5,7 @@ namespace App\Models\Jurnal;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Model;
-#[Fillable(['tInvoice', 'tKwitansi', 'tNoPenerimaan', 'tNilaiBayar', 'tTglBayar', 'tAsalPenerimaan', 'tDeskripsi', 'tCoa', 'tSumber', 'tSumberId'])]
+#[Fillable(['tInvoice', 'tKwitansi', 'tNoPenerimaan', 'tNilaiBayar', 'tTglBayar', 'tAsalPenerimaan', 'tDeskripsi', 'tCoa', 'tSumber', 'tSumberId', 'created_by', 'updated_by'])]
 #[Table('tr_terima')]
 
 class Penerimaan extends Model

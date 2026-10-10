@@ -23,6 +23,8 @@ return new class extends Migration {
             $table->integer('kStatus')->nullable();
             $table->decimal('kTerpakai', 20, 2)->nullable();
             $table->integer('kIdPengajuanBelanja')->nullable();
+            $table->string('created_by', 50)->nullable();
+            $table->string('updated_by', 50)->nullable();
             $table->timestamps();
         });
     }

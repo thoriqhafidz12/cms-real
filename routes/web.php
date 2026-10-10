@@ -4,10 +4,13 @@ use App\Http\Controllers\Akuntansi\BukuBesarController;
 use App\Http\Controllers\Akuntansi\JurnalController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Bendahara\PenerimaanController;
+use App\Http\Controllers\Bendahara\PengeluaranController;
 use App\Http\Controllers\Combo\JadwalangsuranforcomboController;
+use App\Http\Controllers\Combo\MapTerimaforcomboController;
 use App\Http\Controllers\Combo\PengajuanforcomboController;
 use App\Http\Controllers\Combo\PinjamanforcomboController;
 use App\Http\Controllers\GantiPassController;
+use App\Http\Controllers\Combo\MapKeluarforcomboController;
 use App\Http\Controllers\Master\Coa\MasterAkunController;
 use App\Http\Controllers\Master\Coa\MasterJenisController;
 use App\Http\Controllers\Master\Coa\MasterKelompokController;
@@ -69,6 +72,8 @@ Route::middleware(['auth', 'checkRole'])->group(function () {
     Route::get('api/pengajuan-pinjaman/search', [PengajuanforcomboController::class, 'index'])->name('api.pengajuan-pinjaman.search');
     Route::get('api/pencairan-pinjaman/search', [PinjamanforcomboController::class, 'index'])->name('api.pencairan-pinjaman.search');
     Route::get('api/jadwal-angsuran/search', [JadwalangsuranforcomboController::class, 'index'])->name('api.jadwal-angsuran.search');
+    Route::get('api/mapping-penerimaan/search', [MapTerimaforcomboController::class, 'index'])->name('api.mapping-penerimaan.search');
+    Route::get('api/mapping-pengeluaran/search', [MapKeluarforcomboController::class, 'index'])->name('api.mapping-pengeluaran.search');
 
     // MENU MANAGEMENT
     // Custom role menu routes (harus diatas resource agar tidak ditangkap {role} wildcard)
@@ -123,6 +128,7 @@ Route::middleware(['auth', 'checkRole'])->group(function () {
     // BENDAHARA
     Route::resource('penerimaan', PenerimaanController::class);
     Route::get('penerimaan/{id}/cetak', [CetakPenerimaanController::class, 'index'])->name('penerimaan.cetak');
+    
     Route::resource('pengeluaran', PengeluaranController::class);
 
 });
