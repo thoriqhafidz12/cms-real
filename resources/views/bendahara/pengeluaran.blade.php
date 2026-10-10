@@ -87,17 +87,17 @@
                                         @endforeach
                                         @if ($item->tSumberId != null)
                                             <td class="text-center" data-label="Aksi">
-                                                {{-- <a href="{{ route($route . '.cetak', $item->{$primaryKey}) }}"
+                                                <a href="{{ route($route . '.cetak', $item->{$primaryKey}) }}"
                                                     target="_blank" class="btn btn-info btn-sm">
                                                     <i class="fas fa-print"></i>
-                                                </a> --}}
+                                                </a>
                                             </td>
                                         @else
                                             <td class="text-center" data-label="Aksi">
-                                                {{-- <a href="{{ route($route . '.cetak', $item->{$primaryKey}) }}"
+                                                <a href="{{ route($route . '.cetak', $item->{$primaryKey}) }}"
                                                     target="_blank" class="btn btn-info btn-sm">
                                                     <i class="fas fa-print"></i>
-                                                </a> --}}
+                                                </a>
                                                 <a href="{{ route($route . '.index', ['edit' => $item->{$primaryKey}]) }}"
                                                     class="btn btn-warning btn-sm">
                                                     <i class="fas fa-edit"></i>

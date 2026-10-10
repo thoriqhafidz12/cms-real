@@ -30,6 +30,7 @@ use App\Http\Controllers\Pinjaman\PembayaranPinjamanController;
 use App\Http\Controllers\Pinjaman\PencairanPinjamanController;
 use App\Http\Controllers\Pinjaman\PengajuanPinjamanController;
 use App\Http\Controllers\Report\CetakPenerimaanController;
+use App\Http\Controllers\Report\CetakPengeluaranController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserController;
 use App\Models\Menu;
@@ -130,6 +131,7 @@ Route::middleware(['auth', 'checkRole'])->group(function () {
     Route::get('penerimaan/{id}/cetak', [CetakPenerimaanController::class, 'index'])->name('penerimaan.cetak');
     
     Route::resource('pengeluaran', PengeluaranController::class);
+    Route::get('pengeluaran/{id}/cetak', [CetakPengeluaranController::class, 'index'])->name('pengeluaran.cetak');
 
 });
 
