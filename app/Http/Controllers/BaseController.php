@@ -11,6 +11,7 @@ use App\Models\Jurnal\PengeluaranCounter;
 use App\Models\Master\Mapping\MappingPenerimaan;
 use App\Models\Master\Mapping\MappingPengeluaran;
 use App\Models\Master\Mapping\MappingSaldoAwal;
+use App\Models\Master\Neraca;
 use App\Models\Master\SaldoAwal;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -613,6 +614,156 @@ abstract class BaseController extends Controller
 
         return (string) $saldo;
     }
+
+    // ======================== HELPER NERACA ========================
+
+    /**
+     * Akumulasi mutasi SELURUH jurnal s.d. $tglAkhir, dikelompokkan per kode objek.
+     * Satu query, dipakai bersama oleh getSaldoNeraca() dan tampilan master.
+     *
+     * @return array{debet: array<string, float>, kredit: array<string, float>}
+     */
+    public function getMutasiCoa(?string $tglAkhir = null): array
+    {
+        $query = Jurnal::query();
+        if ($tglAkhir) {
+            $query->where('jTgl', '<=', $tglAkhir);
+        }
+
+        $rows = $query->get(['jRekDebetKode', 'jDebetNilai', 'jRekKreditKode', 'jKreditNilai']);
+
+        $debet = [];
+        $kredit = [];
+        foreach ($rows as $row) {
+            $kd = trim((string) $row->jRekDebetKode);
+            $kk = trim((string) $row->jRekKreditKode);
+            if ($kd !== '') {
+                $debet[$kd] = round(($debet[$kd] ?? 0) + (float) $row->jDebetNilai, 2);
+            }
+            if ($kk !== '') {
+                $kredit[$kk] = round(($kredit[$kk] ?? 0) + (float) $row->jKreditNilai, 2);
+            }
+        }
+
+        return ['debet' => $debet, 'kredit' => $kredit];
+    }
+
+    /**
+     * Saldo per baris konfigurasi ms_neraca.
+     * nrKodeAkun = prefix kode objek (ms_objek.msoKode), dipisah koma bila lebih dari satu.
+     * Pencocokan per segmen: '1.01' cocok dengan '1.01.01.01', bukan '1.010'.
+     * CATATAN: prefix dalam satu baris tidak boleh saling menutupi (mis. '1' dan '1.01'),
+     * karena pencocokan berhenti pada prefix pertama yang cocok (hindari hitung ganda).
+     *
+     * @param  iterable $items     baris ms_neraca (model/array: nrId, nrKodeAkun, nrSaldoNormal)
+     * @param  string|null $tglAkhir 'Y-m-d'; null = seluruh jurnal
+     * @return array<int, float>   [nrId => saldo]
+     */
+    public function getSaldoNeraca(iterable $items, ?string $tglAkhir = null): array
+    {
+        $mutasi = $this->getMutasiCoa($tglAkhir);
+
+        // Bentuk pipih [kode => [d, k]] → cukup satu loop per prefix.
+        $pipih = [];
+        foreach ($mutasi['debet'] as $kode => $nilai) {
+            $pipih[$kode]['d'] = $nilai;
+        }
+        foreach ($mutasi['kredit'] as $kode => $nilai) {
+            $pipih[$kode]['k'] = $nilai;
+        }
+
+        $hasil = [];
+        foreach ($items as $item) {
+            $nrId = is_array($item) ? ($item['nrId'] ?? null) : $item->nrId;
+            $kodeAkun = (string) (is_array($item) ? ($item['nrKodeAkun'] ?? '') : $item->nrKodeAkun);
+            $saldoNormal = strtoupper((string) (is_array($item) ? ($item['nrSaldoNormal'] ?? 'D') : $item->nrSaldoNormal));
+
+            $prefixes = array_values(array_filter(
+                array_map('trim', explode(',', $kodeAkun)),
+                fn($p) => $p !== ''
+            ));
+
+            $debet = 0.0;
+            $kredit = 0.0;
+            if ($prefixes) {
+                foreach ($pipih as $kode => $n) {
+                    foreach ($prefixes as $prefix) {
+                        if ($kode === $prefix || str_starts_with($kode, $prefix . '.')) {
+                            $debet += $n['d'] ?? 0;
+                            $kredit += $n['k'] ?? 0;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            $hasil[$nrId] = round($saldoNormal === 'K' ? $kredit - $debet : $debet - $kredit, 2);
+        }
+
+        return $hasil;
+    }
+
+    /**
+     * Susun data neraca dari konfigurasi ms_neraca (urut nrUrut).
+     * Total ditentukan oleh baris nrKode 'T-AKTIVA' / 'T-PASIVA'
+     * (fallback: baris total terakhir per posisi).
+     */
+    public function buildNeraca(string $tglAwal, string $tglAkhir): array
+    {
+        $items = Neraca::orderBy('nrUrut', 'asc')->orderBy('nrId', 'asc')->get();
+        $saldo = $this->getSaldoNeraca($items, $tglAkhir);
+
+        $rows = [];
+        $tAktiva = null;
+        $tPasiva = null;
+        $lastTotal = ['AKTIVA' => null, 'PASIVA' => null];
+
+        foreach ($items as $item) {
+            $nilai = (float) ($saldo[$item->nrId] ?? 0);
+            $prefix = trim((string) $item->nrKodeAkun);
+
+            $rows[] = [
+                'nrId' => $item->nrId,
+                'type' => $item->nrJenis,
+                'posisi' => $item->nrPosisi,
+                // Kode ditampilkan hanya bila prefix tunggal berupa kode bertitik ('1.01.01'); '4,5' → kosong.
+                'kodeTampil' => ($prefix !== '' && !str_contains($prefix, ',') && preg_match('/^[0-9.]+$/', $prefix)) ? $prefix : '',
+                'nama' => $item->nrNama,
+                'indent' => $item->nrJenis === 'item' ? 1 : 0,
+                'saldo' => $nilai,
+            ];
+
+            if ($item->nrJenis === 'total') {
+                $lastTotal[$item->nrPosisi] = $nilai;
+            }
+            if ($item->nrKode === 'T-AKTIVA') {
+                $tAktiva = $nilai;
+            }
+            if ($item->nrKode === 'T-PASIVA') {
+                $tPasiva = $nilai;
+            }
+        }
+
+        if ($tAktiva === null) {
+            $tAktiva = $lastTotal['AKTIVA'] ?? 0;
+        }
+        if ($tPasiva === null) {
+            $tPasiva = $lastTotal['PASIVA'] ?? 0;
+        }
+
+        $selisih = round($tAktiva - $tPasiva, 2);
+
+        return [
+            'rows' => $rows,
+            'tAktiva' => $tAktiva,
+            'tPasiva' => $tPasiva,
+            'selisih' => $selisih,
+            'seimbang' => abs($selisih) < 0.01,
+            'tglAwal' => $tglAwal,
+            'tglAkhir' => $tglAkhir,
+        ];
+    }
+    // ======================== HELPER NERACA END =======================
 
     //  ======================== HELPER FUNCTIONS ========================
     public function formatDate($date): string

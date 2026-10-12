@@ -6,7 +6,7 @@ use App\Http\Controllers\BaseController;
 use App\Libraries\CustomPdf;
 use App\Models\Jurnal\Pengeluaran;
 
-class cFPDF extends CustomPdf
+class cFPDFPengeluaran extends CustomPdf
 {
     // Custom footer for the PDF
     function Footer()
@@ -27,7 +27,7 @@ class CetakPengeluaranController extends BaseController
             ->firstOrFail()
             ->toArray();
 
-        $pdf = new cFPDF('P', 'mm', 'A4');
+        $pdf = new cFPDFPengeluaran('P', 'mm', 'A4');
         $pdf->AliasNbPages();
 
         $pdf->SetMargins(10, 10, 10);

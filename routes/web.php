@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Akuntansi\BukuBesarController;
 use App\Http\Controllers\Akuntansi\JurnalController;
+use App\Http\Controllers\Akuntansi\NeracaController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Bendahara\PenerimaanController;
 use App\Http\Controllers\Bendahara\PengeluaranController;
@@ -23,6 +24,7 @@ use App\Http\Controllers\Master\Mapping\MappingSaldoAwalController;
 use App\Http\Controllers\Master\MasterAnggotaController;
 use App\Http\Controllers\Master\MasterBankkasController;
 use App\Http\Controllers\Master\MasterJaminanController;
+use App\Http\Controllers\Master\MasterNeracaController;
 use App\Http\Controllers\Master\MasterTujuanPinjamanController;
 use App\Http\Controllers\Master\MetodePembayaranController;
 use App\Http\Controllers\MenuController;
@@ -107,6 +109,7 @@ Route::middleware(['auth', 'checkRole'])->group(function () {
     Route::resource('ms-bank-kas', MasterBankkasController::class);
     Route::resource('ms-jaminan', MasterJaminanController::class);
     Route::resource('ms-tujuan-pinjaman', MasterTujuanPinjamanController::class);
+    Route::resource('ms-neraca', MasterNeracaController::class);
 
     // PINJAMAN
     Route::resource('pengajuan-pinjaman', PengajuanPinjamanController::class);
@@ -125,6 +128,11 @@ Route::middleware(['auth', 'checkRole'])->group(function () {
     Route::get('rpt-buku-besar/load', [BukuBesarController::class, 'loadData'])->name('rpt-buku-besar.load');
     Route::get('rpt-buku-besar/pdf', [BukuBesarController::class, 'pdf'])->name('rpt-buku-besar.pdf');
     Route::get('rpt-buku-besar/excel', [BukuBesarController::class, 'excel'])->name('rpt-buku-besar.excel');
+
+    Route::get('rpt-neraca', [NeracaController::class, 'index'])->name('rpt-neraca.index');
+    Route::get('rpt-neraca/load', [NeracaController::class, 'loadData'])->name('rpt-neraca.load');
+    Route::get('rpt-neraca/pdf', [NeracaController::class, 'pdf'])->name('rpt-neraca.pdf');
+    Route::get('rpt-neraca/excel', [NeracaController::class, 'excel'])->name('rpt-neraca.excel');
 
     // BENDAHARA
     Route::resource('penerimaan', PenerimaanController::class);

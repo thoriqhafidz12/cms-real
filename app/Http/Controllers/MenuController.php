@@ -94,7 +94,7 @@ class MenuController extends BaseController
 
         $this->extraViewData = [
             'parentMenus' => fn() => Menu::where('mIsActive', 1)
-                ->orderBy('mOrder')
+                ->orderBy('mNama')
                 ->get(),
         ];
     }
