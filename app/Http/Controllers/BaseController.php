@@ -8,6 +8,7 @@ use App\Models\Jurnal\Penerimaan;
 use App\Models\Jurnal\PenerimaanCounter;
 use App\Models\Jurnal\Pengeluaran;
 use App\Models\Jurnal\PengeluaranCounter;
+use App\Models\Master\LabaRugi;
 use App\Models\Master\Mapping\MappingPenerimaan;
 use App\Models\Master\Mapping\MappingPengeluaran;
 use App\Models\Master\Mapping\MappingSaldoAwal;
@@ -625,7 +626,21 @@ abstract class BaseController extends Controller
      */
     public function getMutasiCoa(?string $tglAkhir = null): array
     {
+        return $this->getMutasiCoaBetween(null, $tglAkhir);
+    }
+
+    /**
+     * Mutasi jurnal dalam RENTANG tanggal, dikelompokkan per kode objek.
+     * Dasar laporan laba rugi (saldo periode, bukan akumulasi s.d. akhir).
+     *
+     * @return array{debet: array<string, float>, kredit: array<string, float>}
+     */
+    public function getMutasiCoaBetween(?string $tglAwal = null, ?string $tglAkhir = null): array
+    {
         $query = Jurnal::query();
+        if ($tglAwal) {
+            $query->where('jTgl', '>=', $tglAwal);
+        }
         if ($tglAkhir) {
             $query->where('jTgl', '<=', $tglAkhir);
         }
@@ -661,8 +676,25 @@ abstract class BaseController extends Controller
      */
     public function getSaldoNeraca(iterable $items, ?string $tglAkhir = null): array
     {
-        $mutasi = $this->getMutasiCoa($tglAkhir);
+        return $this->hitungSaldoPrefix($items, $this->getMutasiCoa($tglAkhir));
+    }
 
+    /**
+     * Saldo per baris konfigurasi terhadap mutasi yang sudah dihitung.
+     * Kode akun = prefix kode objek (ms_objek.msoKode), dipisah koma bila lebih dari satu.
+     * Pencocokan per segmen: '1.01' cocok dengan '1.01.01.01', bukan '1.010'.
+     * CATATAN: prefix dalam satu baris tidak boleh saling menutupi (mis. '1' dan '1.01'),
+     * karena pencocokan berhenti pada prefix pertama yang cocok (hindari hitung ganda).
+     *
+     * @param  iterable $items      baris konfigurasi (model/array dengan kolom id/kode akun/saldo normal)
+     * @param  array    $mutasi     hasil getMutasiCoa/getMutasiCoaBetween
+     * @param  string   $idKey      nama kolom primary key (nrId / lrId)
+     * @param  string   $kodeKey    nama kolom kode akun (nrKodeAkun / lrKodeAkun)
+     * @param  string   $normalKey  nama kolom saldo normal (nrSaldoNormal / lrSaldoNormal)
+     * @return array<int, float>    [id => saldo]
+     */
+    protected function hitungSaldoPrefix(iterable $items, array $mutasi, string $idKey = 'nrId', string $kodeKey = 'nrKodeAkun', string $normalKey = 'nrSaldoNormal'): array
+    {
         // Bentuk pipih [kode => [d, k]] → cukup satu loop per prefix.
         $pipih = [];
         foreach ($mutasi['debet'] as $kode => $nilai) {
@@ -674,9 +706,9 @@ abstract class BaseController extends Controller
 
         $hasil = [];
         foreach ($items as $item) {
-            $nrId = is_array($item) ? ($item['nrId'] ?? null) : $item->nrId;
-            $kodeAkun = (string) (is_array($item) ? ($item['nrKodeAkun'] ?? '') : $item->nrKodeAkun);
-            $saldoNormal = strtoupper((string) (is_array($item) ? ($item['nrSaldoNormal'] ?? 'D') : $item->nrSaldoNormal));
+            $id = is_array($item) ? ($item[$idKey] ?? null) : $item->{$idKey};
+            $kodeAkun = (string) (is_array($item) ? ($item[$kodeKey] ?? '') : $item->{$kodeKey});
+            $saldoNormal = strtoupper((string) (is_array($item) ? ($item[$normalKey] ?? 'D') : $item->{$normalKey}));
 
             $prefixes = array_values(array_filter(
                 array_map('trim', explode(',', $kodeAkun)),
@@ -697,11 +729,97 @@ abstract class BaseController extends Controller
                 }
             }
 
-            $hasil[$nrId] = round($saldoNormal === 'K' ? $kredit - $debet : $debet - $kredit, 2);
+            $hasil[$id] = round($saldoNormal === 'K' ? $kredit - $debet : $debet - $kredit, 2);
         }
 
         return $hasil;
     }
+
+    // ======================== HELPER LABA RUGI ========================
+
+    /**
+     * Saldo periode per baris konfigurasi ms_labarugi.
+     * Berbeda dengan neraca (akumulasi s.d. akhir), laba rugi memakai
+     * mutasi dalam rentang jTgl >= $tglAwal s.d. jTgl <= $tglAkhir.
+     *
+     * @param  iterable $items      baris ms_labarugi (model/array: lrId, lrKodeAkun, lrSaldoNormal)
+     * @param  string|null $tglAwal 'Y-m-d'; null = sejak jurnal pertama
+     * @param  string|null $tglAkhir 'Y-m-d'; null = s.d. jurnal terakhir
+     * @return array<int, float>   [lrId => saldo]
+     */
+    public function getSaldoLabaRugi(iterable $items, ?string $tglAwal = null, ?string $tglAkhir = null): array
+    {
+        return $this->hitungSaldoPrefix(
+            $items,
+            $this->getMutasiCoaBetween($tglAwal, $tglAkhir),
+            'lrId',
+            'lrKodeAkun',
+            'lrSaldoNormal'
+        );
+    }
+
+    /**
+     * Susun data laba rugi dari konfigurasi ms_labarugi (urut lrUrut).
+     * Total pendapatan/biaya ditentukan oleh baris lrKode 'T-PENDAPATAN' / 'T-BIAYA'
+     * (fallback: baris total terakhir per posisi).
+     * Laba bersih = total pendapatan - total biaya.
+     */
+    public function buildLabaRugi(string $tglAwal, string $tglAkhir): array
+    {
+        $items = LabaRugi::orderBy('lrUrut', 'asc')->orderBy('lrId', 'asc')->get();
+        $saldo = $this->getSaldoLabaRugi($items, $tglAwal, $tglAkhir);
+
+        $rows = [];
+        $tPendapatan = null;
+        $tBiaya = null;
+        $lastTotal = ['PENDAPATAN' => null, 'BIAYA' => null];
+
+        foreach ($items as $item) {
+            $nilai = (float) ($saldo[$item->lrId] ?? 0);
+            $prefix = trim((string) $item->lrKodeAkun);
+
+            $rows[] = [
+                'lrId' => $item->lrId,
+                'type' => $item->lrJenis,
+                'posisi' => $item->lrPosisi,
+                // Kode ditampilkan hanya bila prefix tunggal berupa kode bertitik ('5.02.01'); '4,5' → kosong.
+                'kodeTampil' => ($prefix !== '' && !str_contains($prefix, ',') && preg_match('/^[0-9.]+$/', $prefix)) ? $prefix : '',
+                'nama' => $item->lrNama,
+                'indent' => $item->lrJenis === 'item' ? 1 : 0,
+                'saldo' => $nilai,
+            ];
+
+            if ($item->lrJenis === 'total') {
+                $lastTotal[$item->lrPosisi] = $nilai;
+            }
+            if ($item->lrKode === 'T-PENDAPATAN') {
+                $tPendapatan = $nilai;
+            }
+            if ($item->lrKode === 'T-BIAYA') {
+                $tBiaya = $nilai;
+            }
+        }
+
+        if ($tPendapatan === null) {
+            $tPendapatan = $lastTotal['PENDAPATAN'] ?? 0;
+        }
+        if ($tBiaya === null) {
+            $tBiaya = $lastTotal['BIAYA'] ?? 0;
+        }
+
+        $labaBersih = round($tPendapatan - $tBiaya, 2);
+
+        return [
+            'rows' => $rows,
+            'tPendapatan' => $tPendapatan,
+            'tBiaya' => $tBiaya,
+            'labaBersih' => $labaBersih,
+            'laba' => $labaBersih >= 0,
+            'tglAwal' => $tglAwal,
+            'tglAkhir' => $tglAkhir,
+        ];
+    }
+    // ======================== HELPER LABA RUGI END ========================
 
     /**
      * Susun data neraca dari konfigurasi ms_neraca (urut nrUrut).

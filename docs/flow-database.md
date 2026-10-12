@@ -188,6 +188,15 @@ Susunan baris neraca **sepenuhnya dari tabel `ms_neraca`** (menu **Master → Ma
 - Akumulasi penyusutan tampil negatif → biarkan `D` (atau ganti `K` bila ingin positif).
 - Menambah jenis COA baru (mis. di `2.02` yang masih kosong) → jalankan ulang seeder `NeracaSeeder` (aman, tidak menimpa edit manual): `php artisan db:seed --class=NeracaSeeder`.
 
+### 7.3 Laporan Laba Rugi (tabel konfigurasi `ms_labarugi`) ✅
+
+Sama seperti Neraca, susunan baris laba rugi **sepenuhnya dari tabel `ms_labarugi`** (menu **Akuntansi → Master Laba Rugi**). Kolom identik dengan `ms_neraca` (prefix `lr`): `lrKode`, `lrNama`, `lrPosisi` (`PENDAPATAN`/`BIAYA`), `lrJenis` (`header`/`item`/`total`), `lrKodeAkun`, `lrSaldoNormal`, `lrUrut`.
+
+- `JUMLAH PENDAPATAN`/`JUMLAH BIAYA` = baris `lrKode = T-PENDAPATAN` / `T-BIAYA`.
+- `LABA (RUGI) BERSIH` = total pendapatan − total biaya (dihitung sistem, muncul sebagai baris footer hijau/merah).
+- **Berbeda dengan neraca**: saldo laba rugi = mutasi dalam **rentang** `jTgl` filter (awal s.d. akhir), bukan akumulasi s.d. tanggal akhir — konsisten untuk periode yang dipilih.
+- Data awal di-seed `LabaRugiSeeder` (baris konfigurasi + menu sidebar + akses role, idempotent): `php artisan db:seed --class=LabaRugiSeeder`.
+
 ---
 
 ## 8. Master Data Lain
@@ -223,6 +232,7 @@ Susunan baris neraca **sepenuhnya dari tabel `ms_neraca`** (menu **Master → Ma
 | Mengubah akun piutang/kas pada pencairan pinjaman | `mapping_pengeluaran` baris `mapKodeAsal = '1.01.03.01'` |
 | Mengubah akun kas/piutang pada pembayaran pinjaman | `mapping_penerimaan` baris `mapKodeAsal = '1.01.03.01'` |
 | Mengubah susunan/label/rumus baris Neraca | `ms_neraca` (menu Master Neraca) |
+| Mengubah susunan/label/rumus baris Laba Rugi | `ms_labarugi` (menu Master Laba Rugi) |
 | Menambah menu sidebar / hak akses | `menu` + `role_menu` (lihat `docs/tambah_menu.md`) |
 | Menyembunyikan menu | `menu.mIsActive = 0` |
 | Mereset penomoran dokumen | `terima_counter` / `kwitansi_counter` / `keluar_counter` |
