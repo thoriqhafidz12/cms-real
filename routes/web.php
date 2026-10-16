@@ -8,11 +8,12 @@ use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Bendahara\PenerimaanController;
 use App\Http\Controllers\Bendahara\PengeluaranController;
 use App\Http\Controllers\Combo\JadwalangsuranforcomboController;
+use App\Http\Controllers\Combo\MapKeluarforcomboController;
 use App\Http\Controllers\Combo\MapTerimaforcomboController;
 use App\Http\Controllers\Combo\PengajuanforcomboController;
 use App\Http\Controllers\Combo\PinjamanforcomboController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\GantiPassController;
-use App\Http\Controllers\Combo\MapKeluarforcomboController;
 use App\Http\Controllers\Master\Coa\MasterAkunController;
 use App\Http\Controllers\Master\Coa\MasterJenisController;
 use App\Http\Controllers\Master\Coa\MasterKelompokController;
@@ -55,14 +56,14 @@ Route::middleware('guest')->group(function () {
 // dashboard ikut dicek
 // karena terdaftar di tabel menu (mRoute = 'dashboard').
 Route::middleware(['auth', 'checkRole'])->group(function () {
-    Route::get('/dashboard', function () {
-        return view('dashboard', [
-            'totalUsers' => User::count(),
-            'totalRoles' => Role::count(),
-            'totalMenus' => Menu::count(),
-        ]);
-    })->name('dashboard');
-
+    // Route::get('/dashboard', function () {
+    //     return view('dashboard', [
+    //         'totalUsers' => User::count(),
+    //         'totalRoles' => Role::count(),
+    //         'totalMenus' => Menu::count(),
+    //     ]);
+    // })->name('dashboard');
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 
     // API FOR COMBO

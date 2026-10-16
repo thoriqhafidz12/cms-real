@@ -80,8 +80,8 @@ class PenerimaanController extends BaseController
         $this->grid =
             [
                 [
-                    'label' => 'Nomor Kwitansi',
-                    'field' => 'tKwitansi',
+                    'label' => 'Nomor Penerimaan',
+                    'field' => 'tNoPenerimaan',
                     'type' => 'text'
                 ],
                 [
